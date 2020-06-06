@@ -9,13 +9,12 @@ const filenames: string[] = preval`
 
   const postsDirectory = path.join(process.cwd(), 'pages/posts')
   const mdxFiles = fs.readdirSync(postsDirectory)
-  console.log('the queried pages', mdxFiles)
+  // console.log('the queried pages', mdxFiles)
   // Loop through all post files and create array of slugs (to create links)
-  const paths = mdxFiles.map(filename => filename.replace(".md", ""));
+  const paths = mdxFiles.map(filename => filename.replace(".mdx", ""));
   module.exports = paths;
 `;
 
-console.log(filenames);
 const Layout = (frontMatter: any) => {
   const Component: React.FC = (props) => {
     return (
@@ -29,7 +28,7 @@ const Layout = (frontMatter: any) => {
             css={css`
               display: flex;
               flex-direction: column;
-              width: 400px;
+              width: 240px;
               border-right: 1px solid #eee;
             `}
           >
@@ -41,7 +40,12 @@ const Layout = (frontMatter: any) => {
               );
             })}
           </div>
-          <div>
+          <div
+            css={css`
+              flex: 1;
+              padding: 12px;
+            `}
+          >
             <h1>{frontMatter.title}</h1>
             {props.children}
           </div>
