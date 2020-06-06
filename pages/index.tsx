@@ -1,25 +1,6 @@
-import { css } from "@emotion/core";
+import { createRedirectComponent } from "../lib/redirect";
 
-const Header = () => {
-  return (
-    <div
-      css={css`
-        height: 60px;
-        background: #eee;
-      `}
-    >
-      Header
-    </div>
-  );
-};
-
-export default () => {
-  return (
-    <div>
-      <Header />
-      <h1>Hello, world</h1>
-    </div>
-  );
-};
-
-export const config = { amp: "hybrid" };
+export default createRedirectComponent({
+  redirectTo: "/posts/08ee0e4230893a770cce",
+  statusCode: 301,
+});
