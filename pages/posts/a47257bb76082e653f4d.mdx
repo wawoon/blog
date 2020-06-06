@@ -1,0 +1,32 @@
+---
+title: JavaScriptでJSONを読みやすく整形する
+tags: JavaScript JSON
+author: wawoon
+slide: false
+---
+JavaScriptでJSONをprettifyするには、以下のように`JSON.stringify()`の第三引数にインデントに使うスペースの数を指定する。
+
+# コード
+
+```javascript
+const data = {"fruit":"Apple","size":"Large","color":"Red"}
+const pretty = JSON.stringify(data, null, 4)
+console.log(pretty)
+```
+
+# 出力
+
+以下のようにインデント幅4でインデントされて表示される。
+
+```
+{
+    "fruit": "Apple",
+    "size": "Large",
+    "color": "Red"
+}
+```
+
+# Reference
+
+[MDN - JSON.stringify()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)
+

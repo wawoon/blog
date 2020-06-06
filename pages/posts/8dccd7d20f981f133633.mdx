@@ -1,0 +1,44 @@
+---
+title: Hash#mergeとHash#with_indifferent_accessを組み合わせる
+tags: Ruby Rails
+author: wawoon
+slide: false
+---
+# 課題
+フォームからの入力に対してデフォルト値を利用したいとき、
+Hash#mergeを利用することで簡単にデフォルト値をベースに、入力を上書きすることが出来ます。
+
+```ruby
+def default_hash
+  { 'name' => '太郎' }
+end
+user = User.new default_hash.merge(user_params)
+```
+
+ただし注意点。
+railsのparamsメソッド等で返るHashは、keyがStringであってもSymbolであっても区別しませんが
+rubyのHashはkeyがStringである場合とSymbolであることを区別します。
+http://apidock.com/rails/ActiveSupport/HashWithIndifferentAccess
+
+なので、もしdefault_hashのkeyがStringである場合には、上書きされない、なんてことが起きます。
+基本的にHashのkeyはSymbolにしたほうがいいのですが、やむを得ずロケット記法でStringをkeyにするとこんなかんじに。
+
+```ruby
+user_params
+=> { name: '花子' }
+default_hash.merge(user_params)
+=>
+{ 'name' => '太郎', :name => '花子' }
+```
+
+# 解決策
+
+mergeする用のデフォルト値を格納しているhashは
+
+```ruby
+def default_hash
+  { 'name' => '太郎' }.with_indifferent_access
+end
+```
+として、with_indifferent_accessしましょう。
+

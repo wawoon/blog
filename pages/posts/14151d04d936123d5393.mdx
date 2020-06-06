@@ -1,0 +1,31 @@
+---
+title: Auth0でaccess_tokenの自動更新を行う
+tags: JWT Auth0
+author: wawoon
+slide: false
+---
+# 解決したい課題
+
+Auth0で発行するaccess_tokenはデフォルトで2時間まで有効なので、セッションが2時間を超えるとそのトークンを使ったAPI通信ができなくなる
+
+# 方針
+
+Auth0はアクセストークンのrenewalする機能がある。
+
+# 実装方法
+
+ドキュメント
+
+https://auth0.com/docs/libraries/auth0js/v9#using-checksession-to-acquire-new-tokens
+
+チュートリアル
+
+https://auth0.com/docs/quickstart/spa/react/05-token-renewal
+
+# 仕組み
+
+- access_tokenがexpireしても、Auth0側のセッションが継続している場合はそのままaccess_tokenを更新できる。
+  - Auth0側のセッションの継続時間はデフォルトで1週間。
+  - https://auth0.com/docs/dashboard/dashboard-tenant-settings#session-timeout
+- そのチェックを行うのがcheckSessionメソッドで、これをaccess_tokenがexpireする時間に合わせて、setIntervalで実行すると最小限のAPIリクエストで有効なaccess_tokenを維持し続けられる。
+

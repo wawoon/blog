@@ -1,0 +1,257 @@
+---
+title: 1分でわかるbyebugの使い方
+tags: Ruby byebug デバッグ
+author: wawoon
+slide: false
+---
+#　お題
+
+ここに間違ったFizzBuzzのプログラムがあります（fizz_bug.rb）
+
+```ruby
+1.upto(30).each do |num|
+  if num % 15 == 0
+    puts "FizzBuzz"
+    next
+  elsif num % 5 == 0
+    puts "Buzz"
+  elsif num % 3 == 0
+    puts "Fizz"
+  end
+
+  puts num
+end
+```
+これをbyebugでデバッギングする仕方を説明します。
+
+
+## 結果（間違ってます）
+
+```
+1
+2
+Fizz
+3
+4
+Buzz
+5
+Fizz
+6
+7
+8
+Fizz
+9
+Buzz
+10
+11
+Fizz
+12
+13
+14
+FizzBuzz
+16
+17
+Fizz
+18
+19
+Buzz
+20
+Fizz
+21
+22
+23
+Fizz
+24
+Buzz
+25
+26
+Fizz
+27
+28
+29
+FizzBuzz
+``` 
+
+どうやら、Fizzのあとと、Buzzのあとに余計な数字が出力されています。困った。
+
+# byebugとは
+
+https://github.com/deivid-rodriguez/byebug
+
+rubyで使えるデバッガです。
+CLIのコマンドも用意されているのですが、byebugライブラリをrequireすると使えるようになる`debugger`メソッドのほうが使いやすいので、この方法を説明します。
+
+## インストール
+
+byebugを使うためにはgem installがいります。
+（bundlerなどですでに入っているディレクトリだったら要りません）
+
+```
+gem install byebug
+```
+
+## プログラムを途中で止める
+
+
+### byebugをrequireします
+
+```ruby
+require 'byebug' # ここ追加
+
+1.upto(30).each do |num|
+  if num % 15 == 0
+    puts "FizzBuzz"
+    next
+  elsif num % 5 == 0
+    puts "Buzz"
+  elsif num % 3 == 0
+    puts "Fizz"
+  end
+
+  puts num
+end
+```
+
+### 止めたいところでdebuggerと書きます
+
+```ruby
+require 'byebug'
+
+1.upto(100).each do |num|
+  if num % 15 == 0
+    puts "FizzBuzz"
+    next
+  elsif num % 5 == 0
+    puts "Buzz"
+    debugger  # ここ追加
+  elsif num % 3 == 0
+    puts "Fizz"
+  end
+
+  puts num
+end
+```
+
+### ruby fizz_bug.rb
+
+```ruby
+➜  Desktop ruby fizz_bug.rb
+1
+2
+Fizz
+3
+4
+Buzz
+
+[6, 15] in /Users/user/Desktop/fizz_bug.rb
+    6:     next
+    7:   elsif num % 5 == 0
+    8:     puts "Buzz"
+    9:     debugger
+   10:   elsif num % 3 == 0
+   11:     puts "Fizz"
+   12:   end
+   13: 
+=> 14:   puts num
+   15: end
+```
+
+プログラムが止まりました。
+8行目の`puts "Buzz"`が実行されたのでBuzzが表示されています。
+
+本当はここで次のイテレーションを実施したいのですが、`Buzz`のあとに`5`と表示されてしまっているので、間違ってしまっているみたいです。
+
+ステップ実行してみます
+
+### ステップ実行
+
+`n`と入力してください。次の行だけ実行できます。
+
+```ruby
+(byebug) n
+5
+
+[1, 10] in /Users/user/Desktop/fizz_bug.rb
+    1: require 'byebug'
+    2: 
+    3: 1.upto(30).each do |num|
+=>  4:   if num % 15 == 0
+    5:     puts "FizzBuzz"
+    6:     next
+    7:   elsif num % 5 == 0
+    8:     puts "Buzz"
+    9:     debugger
+   10:   elsif num % 3 == 0
+(byebug) 
+```
+
+どうやら14行目の`puts n`が実行されて、次のイテレーションに移ってしまったみたいです。
+どうやら`next`し忘れたみたいです。
+
+### 次のdebuggerまで処理をつづける
+
+原因がわかったので、次のループまで飛ばします
+
+`c`と入力します。
+
+```ruby
+(byebug) c
+Fizz
+6
+7
+8
+Fizz
+9
+Buzz
+
+[6, 15] in /Users/user/Desktop/fizz_bug.rb
+    6:     next
+    7:   elsif num % 5 == 0
+    8:     puts "Buzz"
+    9:     debugger
+   10:   elsif num % 3 == 0
+   11:     puts "Fizz"
+   12:   end
+   13: 
+=> 14:   puts num
+   15: end
+(byebug) 
+
+```
+
+`c`を押すと、次にdebuggerが仕込まれているところまで処理を実行します。
+
+### デバッグをやめる
+
+もう原因がわかっているので、終了します。
+
+```
+(byebug) exit
+➜  Desktop 
+```
+
+# 完成版
+
+Fizzのあともバグってたので直します。
+
+```ruby
+require 'byebug'
+
+1.upto(30).each do |n|
+  if num % 15 == 0
+    puts "FizzBuzz"
+    next
+  elsif num % 5 == 0
+    puts "Buzz"
+    next
+  elsif num % 3 == 0
+    puts "Fizz"
+    next
+  end
+
+  puts num
+end
+```
+
+ということで完成です。
+

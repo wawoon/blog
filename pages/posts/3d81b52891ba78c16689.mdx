@@ -1,0 +1,223 @@
+---
+title: React Nativeで任意のReact コンポーネントを使う方法
+tags: reactnative React
+author: wawoon
+slide: false
+---
+この記事はReact Nativeアドベントカレンダーの5日目の記事です。
+React Nativeでリッチテキストエディタをどうやって実装したのかを紹介します
+
+# やりたかったこと
+
+新規事業でSNSアプリケーションをReact NativeとExpoを使って開発していました（現在リリース申請中）。
+このSNSでユーザーは投稿のなかに他のユーザーにメンションを追加したり、ハッシュタグを追加することができます。
+
+そこでTwitterやFacebookで出てくるような、サジェスト機能の実装をする必要がでてきました。
+考えられる方法はざっくり以下です
+
+- 頑張ってReact NativeのViewで書く
+- iOS, Androidのネイティブで書いてブリッジを書く
+- WebViewで実装する（DOMのcontenteditable="true"を活用する）
+
+今回やったのは3番目のWebViewの実装をすることができます
+
+# 出来上がったもの
+
+![editor.gif](https://qiita-image-store.s3.amazonaws.com/0/140443/e0f6207e-414d-dddb-604e-84f0e6482a02.gif)
+
+こんな感じのリッチテキストエディタです。
+Quill.jsベースで、ハッシュタグ、メンションなどを実装しています。Quill.jsは内部的にcontenteditableを利用しているので、WebView経由じゃないとこのような実装をすることができません。
+
+# どうやるのか
+
+React NativeではWebViewを経由して任意のhtmlファイルを読み込んで画面内に表示したり、任意のJavaScriptコードを実行することができます。
+これはつまり、__ブラウザ内でしか実現できない挙動をWebView経由であればReact Nativeアプリにマウントできる__ということです。
+
+これはReactであってもVueであっても、PureJSであっても同様です。ありとあらゆるJSコードをReact Native上で実行することができます。
+また、postMessageやonMessageを経由して、React NativeとWebView間で通信することができます。
+
+今回はこの仕組みで、Quill.jsをReact Nativeアプリのリッチテキストエディタとして採用しました。
+
+
+## コードサンプル
+
+### WebViewからReact Nativeに対してメッセージを送信する方法
+
+WebView内からReact Native側にメッセージを送信するためには、`window.postMessage`を実行します。
+また、送信されたメッセージをReact Native側で受け取るためにはWebViewコンポーネントの`onMessage`で、WebView内からのメッセージを受信することができます。
+
+```jsx
+// React Native側
+
+export class RichTextInput extends React.PureComponent<Props, State> {
+  handleMessage = (event: NativeSyntheticEvent<WebViewMessageEventData>) => {
+    let msgData;
+    try {
+      msgData = JSON.parse(event.nativeEvent.data);
+      if (
+        msgData.hasOwnProperty("prefix") &&
+        msgData.prefix === MESSAGE_PREFIX
+      ) {
+        // ここに任意のメッセージ処理を書く
+        switch (msgData.type) {
+          case "EDITOR_LOADED":
+            // 任意の処理
+            break;
+          case "EDITOR_SENT":
+            // 任意の処理
+            break;
+          case "TEXT_CHANGED":
+            // 任意の処理
+            break;
+        }
+      }
+    } catch (err) {
+      console.warn(err);
+      return;
+    }
+  };
+
+  // 略
+
+  render() {
+    return (
+      <WebView
+        ref={this.createWebViewRef}
+        source={RICH_TEXT_SOURCE}
+        onLoadEnd={this.onWebViewLoaded}
+        onMessage={this.handleMessage}
+        startInLoadingState={true}
+        originWhitelist={["*"]}
+        javaScriptEnabled={true}
+        onError={this.onError}
+        scalesPageToFit={false}
+        mixedContentMode={"always"}
+        domStorageEnabled={true}
+      />
+    );
+  }
+}
+
+```
+
+### React NativeからWebViewにメッセージを送信する方法
+
+逆にReact Native側からメッセージを送信するためには、WebViewのReactElementに対してpostMessageを実行します。
+何らか、メッセージの型を決めておくと便利です。
+
+```jsx
+// React Native側
+
+export class RichTextInput extends React.PureComponent<Props, State> {
+  webview?: WebView;
+  createWebViewRef = (webview: WebView) => {
+    this.webview = webview;
+  };
+
+  public addUserMention = (user: User) => {
+    this.sendMessage("INSERT_USER_MENTION", { user });
+  };
+
+  public addHashTag = (hashTag: HashTag) => {
+    this.sendMessage("INSERT_USER_MENTION", { hashTag });
+  };
+
+  public setHtmlContent = (html: string) => {
+    this.sendMessage("SET_HTML_CONTENTS", {
+      html
+    });
+  };
+
+  sendMessage = (type: string, payload?: any) => {
+    // only send message when webview is loaded
+    if (this.webview) {
+      debugLog(`WebViewQuillEditor: sending message ${type}`);
+
+      // @ts-ignore
+      this.webview.postMessage(
+        JSON.stringify({
+          prefix: MESSAGE_PREFIX,
+          type,
+          payload
+        }),
+        "*"
+      );
+    }
+  };
+  
+  render() {
+    return (
+      <WebView
+        ref={this.createWebViewRef}
+        source={RICH_TEXT_SOURCE}
+        // 略
+      />
+    );
+  }
+}
+
+```
+
+これをWebView側で受信するためには、documentに`message`イベントで通知されるのでこのイベントをlistenして処理します
+
+```jsx
+
+export default class ReactQuillEditor extends React.Component<{}, State> {
+  componentDidMount() {
+    if (document) {
+      document.addEventListener("message", this.handleMessage);
+    } else if (window) {
+      window.addEventListener("message", this.handleMessage);
+    } else {
+      console.log("unable to add event listener");
+    }
+    this.loadEditor();
+    (window as any).app = this;
+  }
+
+  handleMessage: EventListener = (event) => {
+    const data = (event as any).data as string;
+
+    let msgData;
+    try {
+      msgData = JSON.parse(data) as any;
+      if (
+        msgData.hasOwnProperty("prefix") &&
+        msgData.prefix === MESSAGE_PREFIX
+      ) {
+        switch (msgData.type) {
+          case "LOAD_EDITOR":
+            // 略
+            break;
+          case "SEND_EDITOR":
+            // 略
+            break;
+          default:
+        }
+      }
+    } catch (err) {
+      this.printElement(`reactQuillEditor error: ${err}`);
+      return;
+    }
+  };
+}
+```
+
+## 頑張ってhtmlファイルを作る
+
+もしもこのやり方でコンポーネントを作るならば、WebViewに読み込ませるためのhtmlファイルを作成し、そしてそれをアプリ内にassetファイルとしてコンパイルする必要があります。
+
+上記を実行するため、このhtmlをビルドするための専用のpackage.jsonを書くことをおすすめします。
+
+`html-webpack-plugin`および、`html-webpack-inline-source-plugin`を利用することで、ビルドしたJSやCSSをhtml内にインライン化することができます。
+
+https://www.npmjs.com/package/html-webpack-inline-source-plugin
+
+# まとめ
+
+Webブラウザではできるけど、React Nativeでは難しい！という挙動があったとき、上記のパターンで実装すると大抵のことはReact Nativeで実行できてしまえそうです。ただし、ブラウザのロードにやや時間が掛かったりする（indicatorがぐるぐる回る）ので、あくまで仕方ないときの策として考えておくと良さそうです。
+
+# 参考
+
+https://medium.com/@reginald.johnson/introducing-react-native-webview-quilljs-e6ca0d13c45c
+

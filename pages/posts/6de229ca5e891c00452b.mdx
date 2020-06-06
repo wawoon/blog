@@ -1,0 +1,146 @@
+---
+title: RailsでのSendGrid X-SMTPAPIの使い方
+tags: SendGrid Rails Ruby
+author: wawoon
+slide: false
+---
+Ruby on Railsを用いたプロジェクトで、SendGridを使用する方法についてまとめてみました。
+
+# SendGridの提供API
+
+## 種類
+
+SendGridは下記の4種類のAPIを提供しています。
+
+- X-SMTPAPI
+- WebAPI v2
+- WebAPI v3
+- WebHook API
+
+## できること
+
+上記のAPIを利用することで、下記の様な動作を実現できます。
+
+- 1通の送信で1000件~10000件の大量送信
+- 予約配信
+- メールのカテゴリ別で開封率・クリック率を取得できる
+
+# 導入検討
+
+## 導入する上での懸念点
+
+現在Ruby on Railsで自社サービスを開発しているのですが、公式のRuby gemの導入を見送りました。
+RailsのActionMailerの機構と統合するのが難しいと感じたためです。
+
+https://github.com/sendgrid/sendgrid-ruby
+
+```ruby
+require 'sendgrid-ruby'
+include SendGrid
+
+from = Email.new(email: 'test@example.com')
+subject = 'Hello World from the SendGrid Ruby Library!'
+to = Email.new(email: 'test@example.com')
+content = Content.new(type: 'text/plain', value: 'Hello, Email!')
+mail = Mail.new(from, subject, to, content)
+
+sg = SendGrid::API.new(api_key: ENV['SENDGRID_API_KEY'])
+response = sg.client.mail._('send').post(request_body: mail.to_json)
+puts response.status_code
+puts response.body
+puts response.headers
+```
+
+## 結局どうしたか
+
+ActionMailerの機構を維持しつながら自前でコードを書くことにしました。
+SendGridのAPIの中でも、X-SMTPAPIはSMTPプロトコルでAPIを利用できます。
+ActionMailerを利用する上ではこれが最適だと考え、X-SMTPAPIを利用することにしました。
+
+# 導入方法
+## 基礎編
+
+SendGridのX-SMTPAPIは、メールのヘッダー部分にJSON形式でパラメーターを与えることで利用することができます。
+JSONを作成し、ActionMailer内で利用できるheadersに格納してください。
+
+メールのカテゴリを指定する例
+
+```ruby
+class UserNotifier < ActionMailer::Base
+  default :from => 'any_from_address@example.com'
+
+  def send_signup_email(user)
+    # カテゴリをつける場合の例
+    xsmtp_api_params = { category: ['category1', 'category2'] }
+    headers['X-SMTPAPI'] = JSON.generate(xsmtp_api_params)
+    @user = user
+    mail( :to => @user.email,
+    :subject => 'Thanks for signing up for our amazing app' )
+  end
+end
+```
+
+参考:
+https://sendgrid.kke.co.jp/docs/API_Reference/SMTP_API/using_the_smtp_api.html
+
+
+### 備考
+
+>RFC 821ではテキスト行の最大長さは1000文字です。この文字列をご自身で生成する場合、上記の制限に収まるよう確認することをお勧めします。
+
+https://sendgrid.kke.co.jp/docs/API_Reference/SMTP_API/using_the_smtp_api.html
+
+とあります。ActionMailerを利用している場合は、自動的に長さを調節してくれるので問題ないようです。
+https://stackoverflow.com/questions/15992281/newlines-resolved-as-0a-in-sendgrid-x-smtpapi-header
+
+
+## 実践編 
+
+### 大量送信をする
+
+```ruby
+xsmtp_api_params = { to: ['メールアドレス1', 'メールアドレス2', ...] }
+headers['X-SMTPAPI'] = JSON.generate(xsmtp_api_params)
+```
+
+最大は10000件まで同時送信可能ですが、SendGrid側の処理速度が遅くなってしまうので1000件までにしましょう。
+
+https://sendgrid.kke.co.jp/blog/?p=1300
+
+### 予約送信をする
+
+`send_at`を指定することでメールが届く時間を指定することが出来ます。
+
+```ruby
+time = Time.zone.now + 1.hour
+xsmtp_api_params = { send_at: time.to_i }
+headers['X-SMTPAPI'] = JSON.generate(xsmtp_api_params)
+```
+
+ただし、送信時刻は実際に送信された時刻のままであり届く時間のみが変わるようです。
+なのでメーラーによっては、送信時刻でソートしているため、過去のメールの中に埋もれてしまうこともあります。
+
+### カテゴリをつけてメールを区別する
+
+```ruby
+xsmtp_api_params = { category: ['category1', 'category2'] }
+headers['X-SMTPAPI'] = JSON.generate(xsmtp_api_params)
+```
+
+メール種別ごとにカテゴリをつけることで、各メールの種類ごとに開封率・クリック率を計測できます。
+
+ただし、カテゴリは累計100個までが推奨らしいので注意。
+
+>現状、トラック可能なカテゴリの数には制限はありません。しかし、ユニークカテゴリ数は100を超えないことを推奨 します。これによりダッシュボード内のStatistics機能の利用性が向上するためです。また、ユニークカテゴリ数が多い場合、メール送信速度に悪い影響を与えます。
+
+https://sendgrid.kke.co.jp/docs/API_Reference/SMTP_API/categories.html
+
+# まとめ
+
+上記の方針で、Railsでも簡単にSendGridのAPIを利用することができます。
+
+SendGridには他にもユーザーごとに配信コンテンツを変更する機能があります。応用が効くのでぜひ試してみてください。
+
+ユーザーごとに配信コンテンツを変更する
+https://sendgrid.kke.co.jp/docs/API_Reference/SMTP_API/substitution_tags.html
+

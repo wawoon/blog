@@ -1,0 +1,198 @@
+---
+title: GraphQL API設計で気をつけること
+tags: GraphQL
+author: wawoon
+slide: false
+---
+# 追記: 2019/01/08
+
+この記事よりも @vvakame さんによるGraphQL APIスキーマの設計ガイドがあるのでそちらを参照することがおすすめです。
+
+https://vvakame.booth.pm/items/1576562
+
+また、GraphQLの設計について相談できるSlackグループを開設しているので、わからないこと・相談したいことがあればぜひ参加してください
+
+[Slackグループ"GraphQLを使っている人たちの集まり"への招待リンク](https://join.slack.com/t/graphql-users-jp/shared_invite/enQtNzE5NDk1NDE4ODk3LWE4ZDgwM2Q4MDBjNzBjOWRkMmEyMzAyYWRhNTc2OTY0ZWJkYWMzNWFhMDZiYWY1MDRmN2ZkYTU3YjY2ZjA2NjE)
+
+また、すべてのGraphQL API設計のベストプラクティスはGitHub API v4に詰まっているので、困ったらGitHubのマネをするというスタンスでいるのがよいです。
+
+https://developer.github.com/v4/
+
+# GraphQL で実装するときに気をつけること
+
+## ID は global で unique にする
+
+- クライアント側で返却するIDはユニークである必要があります。
+  - たとえばUser型のidを`123`と返すのではなく、`User:123`や、これを base64 encode した`VXNlcjoxMjM=`とします。
+  - 理由は、ApolloやRelayのようなGraphQLクライアントはキャッシュ機構を持っており、このidをキーとしてエンティティを保存するためです
+  - 異なる型で同じidを共有してしまうと、キャッシュが意図せず上書きされるのでバグの原因となります
+
+この仕様はGraphQL Global Object Identification Specificationに定義されています。
+https://facebook.github.io/relay/graphql/objectidentification.htm
+
+※ ApolloのInMemoryCacheでは, 1. _typenameと, 2. id, _idのどちらか とを組み合わせてキャッシュのキーとするため、厳密にはidをglobal uniqueにする必要はありません。
+
+https://www.apollographql.com/docs/react/caching/cache-configuration/#assigning-unique-identifiers
+
+## Mutation の入力は input を定義する
+
+```graphql
+type Mutation {
+  createPost(title: String!, content: String!): PostPayload!
+}
+```
+
+とするのではなく
+
+```graphql
+type Mutation {
+  createPost(input: CreatePostInput!): CreatePostPayload!
+}
+
+input CreatePostInput {
+  title: String!
+  content: String!
+}
+```
+
+としましょう。inputを定義しておくと TypeScript の型が作られるので便利です。
+
+
+### TypeScriptの型を生成する方法
+
+- Relayを使っている場合
+    - relay-compilerが型を作成してくれる
+- その他の場合（Apolloなど）
+    - graphql-code-generatorを利用すると型を生成できます
+    - https://github.com/dotansimha/graphql-code-generator
+
+## Mutation でデータ変更があったエンティティは、その場で返す
+
+```graphql
+type Mutation {
+  updatePost(input: UpdatePostInput!): UpdatePostPayload!
+}
+
+type UpdatePostPayload {
+  postEdge: PostEdge! // ここで更新した中身を返すようにする
+}
+```
+
+- 変更のあったデータをmutationの返り値にすると、クライアント側でキャッシュの更新ができます
+  - UpdatePostPayloadの中身でPost!を返さず、成功/失敗のbooleanだけを返すような設計にしておくと、クライアントサイドのキャッシュ更新を自分でやらないといけなくなるので不便です。
+- 元ネタ
+  - https://graphqlmastery.com/blog/graphql-best-practices-for-graphql-schema-design
+
+## リレーション先は ID ではなくて生のエンティティを返すようにする
+
+```
+type Post {
+  id: ID!
+  userId: ID!
+  title: String!
+  content: String!
+}
+```
+
+よりも
+
+```
+type Post {
+  id: ID!
+  user: User!
+  title: String!
+  content: String!
+}
+```
+
+としましょう。
+
+- ID を返すようにすると、もう一度クエリしないと取得できない
+- はじめから生のエンティティを返すようにすれば一度で取得できる
+- ただし、関連先を取得するのはクエリで要求されているときだけにする
+  - 呼ばれたフィールドだけ関連先を実装する設計にするのは、たいていのライブラリでサポートされています。
+  - こうしておくと無駄なDBアクセスを防ぐことができます
+
+## DB アクセスの N+1 問題に対処する
+
+- GraphQL の各リゾルバは、1 クエリで 100-500 回呼ばれることもありうる
+- 各リゾルバが勝手に DB アクセスすると、SQL が 100-500 回呼ばれることになる。
+- これをバッファリングして DB アクセスをバッチ化する仕組みが必要。
+- JS実装
+  - https://github.com/facebook/dataloader
+- Go実装
+  - https://github.com/vektah/dataloaden
+  - https://github.com/graph-gophers/dataloader
+
+## ページネーションに対応する
+
+- コレクションへのクエリはページネーションできるようにしなくてはいけない
+  - edges
+  - node
+- https://facebook.github.io/relay/docs/en/graphql-server-specification.html
+
+例
+
+```graphql
+{
+  user {
+    id
+    name
+    friends(first: 10, after: "opaqueCursor") {
+      edges {
+        cursor
+        node {
+          id
+          name
+        }
+      }
+      pageInfo {
+        hasNextPage
+      }
+    }
+  }
+}
+```
+
+pageInfoにhasNextPageがあるので、次のページの取得ができるかどうかをrequestをせずに知ることができる。
+specificationは[ここ](https://facebook.github.io/relay/graphql/connections.htm)
+
+## コレクションの取得は limit をかならず掛ける
+
+- Relay Specificationに従っている場合
+  - first, lastを設定していれば問題ない
+  - もしもfirst, lastのどちらも設定されていなかった場合、`first: 10, after: null`などにフォールバックするべき
+- Relay Specificationに従っていない場合
+  - 何件ほしいのかを明確にしないと、すべて返すことになってしまう
+  - 件数が増えたときに対応できない
+
+## 複雑なクエリをはじく
+
+- 複雑なクエリを実行させないようにする
+  - depthで制限をかける
+  - queryのcomplexityを計算して制限をかける
+- 例
+  - JS: https://blog.apollographql.com/securing-your-graphql-api-from-malicious-queries-16130a324a6b
+  - Go: https://gqlgen.com/reference/complexity/
+
+## ディレクティブを活用する
+
+- データアクセス制限をかけるために使う
+  - https://qiita.com/kousaku-maron/items/dfc435936305f266b65b
+- 例
+  - JS: https://www.apollographql.com/docs/apollo-server/features/directives.html
+  - Go: https://gqlgen.com/reference/directives/
+
+## GraphQL のテストを書く
+
+- 手動で書くのは難しいので request と output のログを記録しておき、スキーマなどの変更をしたあとに差分がないかを確認する（ゴールデンテスティング）
+- 実例
+  - https://github.com/mercari/mtc2018-web/blob/fa73af6c379acfe9be2e1b0e08d22c295cbab1f5/server/gqlapi/resolver_test.go#L19
+
+# 参考
+
+https://github.com/vvakame/graphql-with-go-book
+https://graphqlmastery.com/blog/graphql-best-practices-for-graphql-schema-design
+https://blog.apollographql.com/optimizing-your-graphql-request-waterfalls-7c3f3360b051
+https://qiita.com/hitochan777/items/04c16ca770f7b3a84af5
+

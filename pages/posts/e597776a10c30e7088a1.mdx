@@ -1,0 +1,258 @@
+---
+title: Cloudflare WorkersでGraphQLリクエストをキャッシュして30msで返すようにした話
+tags: cloudflare GraphQL
+author: wawoon
+slide: false
+---
+
+この記事は、[GraphQL Advent Calendar 2019](https://qiita.com/advent-calendar/2019/graphql)の 5 日目の記事です。
+GraphQL API のキャッシュ層を Cloudflare Workers で作成する方法を解説してみます。
+
+# サマリ
+
+GraphQL では RESTful API における GET 系のものであっても POST で送信するという規約があります。そのため、URL だけを見てそのクエリの取得内容を知ることはできません。結果として、RESTful API のように GET である特定の URL、特定のクエリパラメータのときはキャッシュされたデータを返す、というようなことを実装することが難しい、という問題があります。
+
+今回は、この問題を解決するために[Cloudflare Workers](https://workers.cloudflare.com/)を利用して CDN 上に GraphQL API サーバーのキャッシュレイヤを作成してみたので、その方法を紹介したいと思います。
+
+作成したコードは GitHub に公開しているので、こちらもご参照ください。
+
+https://github.com/wawoon/graphql-cache-worker
+
+# Cloudflare Workers とは？
+
+<img width="1227" alt="スクリーンショット 2019-12-05 23.21.32.png" src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/140443/cad450c9-be68-26ac-3499-99984794d54d.png">
+
+Cloudflare Workers は、Cloudflare が提供している CDN のエッジサーバー上で実行される FaaS です。AWS が提供している Lambda や、GCP が提供している Cloud Functions の、エッジサーバーで実行されるバージョンだと思ってください。
+
+## 何がすごいの？
+
+- [wrangler](https://github.com/cloudflare/wrangler)という CLI ツールを使うことで、一瞬で FaaS アプリケーションのローカルでの開発、デプロイをすることができます。
+- javascript, webpack, wasm に対応しており、特に webpack を利用した開発の場合では、npm packages を import することができます。
+  - 今回、GraphQL のクエリをパースするために、graphql-tag という npm ライブラリを使いましたが、普通に npm i をして使うことができました。
+  - とても便利。
+- cloudflare を DNS に利用している場合、Cloudflare 経由で割当しているドメインへのリクエストを、すべてのこの Cloudflare Worker で intercept することができます。なので、リバースプロキシの役割をしたり、今回のようにキャッシュレイヤを作成することもできます。
+- cloudflare worker にはデフォルトで global な URL が付与されます。なので、cloudflare worker を単独で API サーバーのように活用することもできます。
+- KVS もついており、かなりスケールするのでキャッシュの保存にも使うことができ、とても使い勝手がよいです
+  - https://developers.cloudflare.com/workers/reference/storage/limitations/
+
+# 作ったもの
+
+https://github.com/wawoon/graphql-cache-worker
+
+任意の GraphQL のエンドポイントに来た GraphQL のリクエストに対して、query, variables が一定であれば cache を返す worker を作成しました。
+今回, https://github.com/lucasbento/graphql-pokemon で公開されている GraphQL API の前段にたてています。
+
+実際にデプロイされている worker が以下です
+https://graphql-cache-worker.wawoon.workers.dev
+
+全く同じクエリを
+
+https://graphql-cache-worker.wawoon.workers.dev
+と
+https://graphql-pokemon.now.sh/
+
+に投げると、**480ms** から **30ms** まで高速化しました
+
+## 元々のバージョン 480ms
+
+<img width="1126" alt="スクリーンショット 2019-12-06 1.46.32.png" src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/140443/f99280e9-5623-c412-7623-cd61731a670c.png">
+
+## キャッシュを噛ませたバージョン 30ms
+
+<img width="1138" alt="スクリーンショット 2019-12-06 1.54.35.png" src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/140443/78ece250-ee6e-0ea9-2a32-825b592f5ba9.png">
+
+## 何をしているのか
+
+ここに、上記の graphql-pokemon で有効なクエリを投げると、初回のみ GraphQL API サーバーにリクエストを投げ、2 回目以降はキャッシュされたレスポンスを返します。
+
+<img width="1231" alt="スクリーンショット_2019-12-05_23_13_10.png" src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/140443/117d109e-c88c-f2fe-ac74-94e913edfb76.png">
+
+# どうやって作るのか
+
+https://github.com/wawoon/graphql-cache-worker
+に完成版のコードがあります。
+
+ざっくりと開発の流れを説明します。
+
+## wrangler を使う
+
+wrangler は cloudflare workers で開発をするときに使うボイラープレート作成, デプロイ, cloudflare の各種 API を叩いてくれるツールです。イメージとしては、react 開発における create-react-app です。
+
+https://developers.cloudflare.com/workers/tooling/wrangler/commands/
+
+インストール
+
+```
+npm i @cloudflare/wrangler
+```
+
+API Key の登録
+
+```
+wrangler config
+```
+
+プロジェクト作成
+
+```
+wrangler generate プロジェクト名 --type="webpack"
+```
+
+また、ローカル環境ではホットリローディングを書けながら、ローカル開発環境を立ち上げることができます。
+
+```
+wrangler preview --watch
+```
+
+これをすると以下の
+<img width="1028" alt="スクリーンショット 2019-12-05 23.50.34.png" src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/140443/e3c2d9e8-19b5-0efd-6eef-463d70cbd589.png">
+
+が表示されます。
+Testing タブを選ぶと、Postman のような HTTP リクエストを任意に投げることもできる。
+
+以下のようなコードが index.js に作成されているので、これを書き換えつつ実装を進めます。
+
+```js
+addEventListener("fetch", (event) => {
+  event.respondWith(handleRequest(event.request));
+});
+/**
+ * Respond with hello worker text
+ * @param {Request} request
+ */
+async function handleRequest(request) {
+  return new Response("Hello worker!", {
+    headers: { "content-type": "text/plain" },
+  });
+}
+```
+
+## KV を利用可能にする
+
+Cloudflare Worker には Key-value store が付属しています。（※月 5\$からのプランに加入する必要がある）
+
+```
+wrangler kv:namespace create "namespace名"
+```
+
+で KV の namespace を作成することができます。
+これを実行すると、コード内でどの定数でこの namespace と binding するのかを設定するためのコードが出力されるので、wrangler.toml にコピペします。
+
+そうすると、worker 内で以下のような API で KVS を利用することができます
+
+```js
+// 読み込み
+const value = await COLLECTION_NAME.get("key_name");
+
+// 書き込み
+await COLLECTION_NAME.put("key_name", value);
+
+// 書き込み（expireを指定）
+await COLLECTION_NAME.put("key_name", value, { expiration: secondsSinceEpoch });
+await COLLECTION_NAME.put("key_name", value, { expirationTtl: secondsFromNow });
+```
+
+## GraphQL のリクエストから cache キーを作成する
+
+Cloudflare Workers では POST リクエストから body を取得することができるので、POST で通常送信される GraphQL のリクエストの中身も受け取ることができます。この body から KVS に保存する際のキャッシュキーを作成します。
+
+```js
+// cache用のkeyを作成する
+function calcCacheKey(parsedBody) {
+  // 今回はqueryの値とvariableの値のみを利用するが、graphql-tagでastが取得できるのでクエリに応じて好きに分岐できる
+  // const ast = gql(parsedBody['query'])
+
+  const baseStr =
+    JSON.stringify(parsedBody["query"]) +
+    JSON.stringify(parsedBody["variables"]);
+
+  const cacheKey = md5(baseStr);
+  return cacheKey;
+}
+```
+
+今回は、query, variables のみでキャッシュキーを作成しましたが、[graphql-tag](https://github.com/apollographql/graphql-tag)のような AST 化を行うツールを使うことで、特定条件のときのみキャッシュさせる、などの処理も行うことが可能です。
+
+# 実際に作成したコード
+
+```js
+const gql = require("graphql-tag");
+const md5 = require("md5");
+
+addEventListener("fetch", (event) => {
+  event.respondWith(handleRequest(event.request));
+});
+
+// https://github.com/lucasbento/graphql-pokemon をサンプル用のAPIとして利用する
+const graphqlEndpointURL = "https://graphql-pokemon.now.sh/";
+const cacheExpireSeconds = 60;
+
+/**
+ * Respond with hello worker text
+ * @param {Request} request
+ */
+
+async function handleRequest(request) {
+  console.log("Got request", request);
+  const newRequest = request.clone();
+
+  if (request.method === "POST") {
+    const body = await request.json();
+    const cacheKey = calcCacheKey(body);
+    console.log("cacheKey:", cacheKey);
+
+    const cachedValue = await GRAPHQL_CACHE.get(cacheKey);
+    if (cachedValue) {
+      console.log("there is a cached value:", cachedValue);
+      return new Response(JSON.parse(cachedValue), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+
+    const response = await fetch(new Request(graphqlEndpointURL, newRequest));
+
+    // APIリクエストが成功したときのみcacheに保存する
+    if (response.status < 400) {
+      console.log("request successed, trying to write cache");
+      const resBody = await response.text();
+
+      // https://developers.cloudflare.com/workers/reference/storage/expiring-keys/
+      await GRAPHQL_CACHE.put(cacheKey, JSON.stringify(resBody), {
+        expirationTtl: cacheExpireSeconds,
+      });
+
+      console.log("succeeded to write cache");
+      return new Response(JSON.stringify(resBody), response);
+    }
+
+    console.log("error occurred", response);
+    return response;
+  }
+
+  const response = await fetch(request);
+  return response;
+}
+
+// cache用のkeyを作成する
+function calcCacheKey(parsedBody) {
+  // 今回はqueryの値とvariableの値のみを利用するが、graphql-tagでastが取得できるのでクエリに応じて好きに分岐できる
+  // const ast = gql(parsedBody['query'])
+
+  const baseStr =
+    JSON.stringify(parsedBody["query"]) +
+    JSON.stringify(parsedBody["variables"]);
+
+  const cacheKey = md5(baseStr);
+  return cacheKey;
+}
+```
+
+# 終わりに
+
+GraphQL のリクエストがデータ取得系であっても POST であるため、キャッシュを作成することができない、というモチベーションから今回の記事を作成しました。
+Cloudflare Workers を利用するとかなり自由にキャッシュ設計をすることができるので、同じような悩みがある方はぜひ試してみることをおすすめします。
+
+# 参考
+
+https://github.com/cloudflare/wrangler
+https://developers.cloudflare.com/workers/tutorials/build-an-application/
