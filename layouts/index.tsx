@@ -111,8 +111,9 @@ const Layout = (frontMatter: any) => {
               `}
             >
               {fileData.map((file) => {
+                const slug = file.filename.replace(".mdx", "");
                 return (
-                  <Link href={`/posts/${file.filename.replace(".mdx", "")}`}>
+                  <Link key={slug} href={`/posts/${slug}`}>
                     <a>
                       <div
                         css={css`
