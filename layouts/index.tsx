@@ -133,6 +133,8 @@ const Layout = (frontMatter: any) => {
             css={css`
               flex: 1;
               padding: 12px;
+              overflow: auto;
+              word-break: break-word;
             `}
           >
             <h1

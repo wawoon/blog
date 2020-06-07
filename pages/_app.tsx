@@ -26,6 +26,7 @@ export default class MyApp extends App {
               return (
                 <pre
                   css={css`
+                    width: 100%;
                     background: #eee;
                     padding: 12px;
                   `}
@@ -37,6 +38,7 @@ export default class MyApp extends App {
             code: (props) => (
               <code
                 css={css`
+                  width: 100%;
                   color: #333;
                 `}
               >
@@ -47,6 +49,7 @@ export default class MyApp extends App {
               return (
                 <code
                   css={css`
+                    width: 100%;
                     line-height: 1.9;
                     box-sizing: inherit;
                     background-color: #eee;
