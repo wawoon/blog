@@ -91,13 +91,13 @@ const Layout = (frontMatter: any) => {
         </div>
         <div
           css={css`
-            display: flex;
+            ${tw`flex flex-col-reverse md:flex-row`}
           `}
         >
           <div
             css={css`
-              width: 240px;
-              border-right: 1px solid #eee;
+              ${tw`w-full`}
+              ${tw`md:w-1/4`}
             `}
           >
             <div
@@ -135,10 +135,11 @@ const Layout = (frontMatter: any) => {
           <div
             css={css`
               flex: 1;
-              padding: 12px;
               overflow: auto;
               word-break: break-word;
               background: #eef0f1;
+
+              ${tw`md:p-4`}
             `}
           >
             <div
@@ -147,10 +148,11 @@ const Layout = (frontMatter: any) => {
                 max-width: 850px;
                 margin: 0 auto;
                 background: #fff;
-                padding: 24px;
                 line-height: 1.7;
                 border-radius: 3px;
                 border: 1px solid #ccc;
+
+                ${tw`p-4 mt-4 mb-4 md:p-8`}
               `}
             >
               <h1
