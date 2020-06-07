@@ -3,7 +3,6 @@ import Link from "next/link";
 import { css } from "@emotion/core";
 import styled from "@emotion/styled";
 
-// @ts-ignore
 const fileData: {
   filename: string;
   data: {
@@ -12,7 +11,9 @@ const fileData: {
     bodyBegin: number;
     frontmatter: string;
   };
-}[] = preval`
+}[] =
+  //@ts-ignore
+  preval`
   const fs = require('fs');
   const path = require('path');
   const fm = require('front-matter');
