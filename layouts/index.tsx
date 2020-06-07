@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { css } from "@emotion/core";
 import styled from "@emotion/styled";
+import tw from "tailwind.macro";
 
 const fileData: {
   filename: string;
@@ -35,6 +36,7 @@ const fileData: {
 // console.log(fileData);
 
 const HeaderLink = styled.a`
+  ${tw`text-red-600`}
   :not(:last-child) {
     margin-right: 8px;
   }
@@ -119,7 +121,13 @@ const Layout = (frontMatter: any) => {
               padding: 12px;
             `}
           >
-            <h1>{frontMatter.title}</h1>
+            <h1
+              css={css`
+                font-size: 2rem;
+              `}
+            >
+              {frontMatter.title}
+            </h1>
             {props.children}
           </div>
         </div>
