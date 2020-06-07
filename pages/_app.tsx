@@ -12,6 +12,16 @@ export default class MyApp extends App {
       <CacheProvider value={cache}>
         <MDXProvider
           components={{
+            img: (props) => {
+              return (
+                <img
+                  css={css`
+                    width: 100%;
+                  `}
+                  src={props.src}
+                />
+              );
+            },
             pre: (props) => {
               return (
                 <pre
