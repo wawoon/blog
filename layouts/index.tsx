@@ -97,7 +97,7 @@ const Layout = (frontMatter: any) => {
           <div
             css={css`
               ${tw`w-full`}
-              ${tw`md:w-1/4`}
+              ${tw`md:w-1/4 lg:w-1/5`}
             `}
           >
             <div
@@ -145,7 +145,7 @@ const Layout = (frontMatter: any) => {
             <div
               css={css`
                 box-sizing: border-box;
-                max-width: 850px;
+                max-width: 1000px;
                 margin: 0 auto;
                 background: #fff;
                 line-height: 1.7;
