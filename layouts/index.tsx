@@ -62,6 +62,7 @@ const Layout = (frontMatter: any) => {
           <div
             css={css`
               font-weight: bold;
+              padding: 12px;
             `}
           >
             <Link href={"/"} passHref>
@@ -116,9 +117,11 @@ const Layout = (frontMatter: any) => {
                       <div
                         css={css`
                           display: flex;
-                          padding: 8px;
+                          padding: 12px;
                           border-bottom: 1px solid #eee;
                           font-size: 14px;
+                          line-height: 1.7;
+                          min-height: 50px;
                         `}
                       >
                         {file.data.attributes.title}
@@ -135,16 +138,30 @@ const Layout = (frontMatter: any) => {
               padding: 12px;
               overflow: auto;
               word-break: break-word;
+              background: #eef0f1;
             `}
           >
-            <h1
+            <div
               css={css`
-                font-size: 2rem;
+                box-sizing: border-box;
+                max-width: 850px;
+                margin: 0 auto;
+                background: #fff;
+                padding: 24px;
+                line-height: 1.7;
+                border-radius: 3px;
+                border: 1px solid #ccc;
               `}
             >
-              {frontMatter.title}
-            </h1>
-            {props.children}
+              <h1
+                css={css`
+                  font-size: 2rem;
+                `}
+              >
+                {frontMatter.title}
+              </h1>
+              {props.children}
+            </div>
           </div>
         </div>
       </div>

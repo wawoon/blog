@@ -3,6 +3,7 @@ import App from "next/app";
 import { CacheProvider, css } from "@emotion/core";
 import { cache } from "emotion";
 import { MDXProvider } from "@mdx-js/react";
+import "normalize.css"; // amp対応するときは書き換えする
 
 export default class MyApp extends App {
   render() {
@@ -16,6 +17,7 @@ export default class MyApp extends App {
               return (
                 <img
                   css={css`
+                    box-sizing: border-box;
                     width: 100%;
                   `}
                   src={props.src}
@@ -26,9 +28,11 @@ export default class MyApp extends App {
               return (
                 <pre
                   css={css`
+                    box-sizing: border-box;
                     width: 100%;
                     background: #eee;
                     padding: 12px;
+                    overflow: auto;
                   `}
                 >
                   {props.children}
@@ -38,6 +42,7 @@ export default class MyApp extends App {
             code: (props) => (
               <code
                 css={css`
+                  box-sizing: border-box;
                   width: 100%;
                   color: #333;
                 `}
@@ -49,6 +54,7 @@ export default class MyApp extends App {
               return (
                 <code
                   css={css`
+                    box-sizing: border-box;
                     width: 100%;
                     line-height: 1.9;
                     box-sizing: inherit;
