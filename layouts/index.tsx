@@ -33,7 +33,6 @@ const fileData: {
 
   module.exports = list;
 `;
-// console.log(fileData);
 
 const HeaderLink = styled.a`
   ${tw`text-red-600`}
@@ -57,9 +56,24 @@ const Layout = (frontMatter: any) => {
             background: white;
             z-index: 1;
             font-weight: bold;
+            border-bottom: 2px solid #eee;
           `}
         >
-          <div>wawoon.dev</div>
+          <div
+            css={css`
+              font-weight: bold;
+            `}
+          >
+            <Link href={"/"} passHref>
+              <a
+                css={css`
+                  text-decoration: none;
+                `}
+              >
+                wawoon.dev
+              </a>
+            </Link>
+          </div>
           <div
             css={css`
               padding: 12px;
