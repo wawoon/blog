@@ -16,7 +16,9 @@ export const createRedirectComponent = (props: {
     if (res) {
       res.writeHead(props.statusCode, { Location: props.redirectTo });
       res.end();
+      return {};
     }
+    return {};
   };
 
   return Redirect;
