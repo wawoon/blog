@@ -8,7 +8,6 @@ import { PostTagContainer, PostTag } from "./PostTag";
 export const SideBarPostCard = (props: { file: typeof fileData[0] }) => {
   const file = props.file;
   const slug = file.filename.replace(".mdx", "");
-  console.log("sidebarpost", props);
   return (
     <Link key={slug} href={`/posts/${slug}`}>
       <a style={{ textDecoration: "none" }}>

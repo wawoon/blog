@@ -16,7 +16,6 @@ export const CodeBlock = ({
   children: string;
   className: string;
 }) => {
-  console.log("className", className);
   const language = className
     ? (className.replace(/language-/, "") as Language)
     : "markup";

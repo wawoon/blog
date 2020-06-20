@@ -4,7 +4,6 @@ import { dateToString } from "../../lib/date";
 import { PostTagContainer, PostTag } from "../../components/PostTag";
 
 export const PostHeader = ({ frontMatter }: { frontMatter: FrontMatter }) => {
-  console.log("post_header", frontMatter);
   return (
     <div>
       <h1
