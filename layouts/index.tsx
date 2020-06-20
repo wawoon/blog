@@ -16,6 +16,21 @@ const dateToString = (date: Date) => {
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
 };
 
+const PostTagContainer = styled.div`
+  display: block;
+  overflow-x: scroll;
+`;
+
+const PostCardTag = styled.span`
+  display: inline-block;
+  padding: 2px;
+  border-radius: 4px;
+  background: #666;
+  color: #fff;
+  margin-right: 4px;
+  font-size: 8px;
+`;
+
 const SideBarPostCard = (props: { file: typeof fileData[0] }) => {
   const file = props.file;
   const slug = file.filename.replace(".mdx", "");
@@ -34,6 +49,11 @@ const SideBarPostCard = (props: { file: typeof fileData[0] }) => {
           `}
         >
           {file.data.attributes.title}
+          <PostTagContainer>
+            {file.data.attributes.tags.split(" ").map((tag, i) => {
+              return <PostCardTag key={`tag-${i}`}>{tag}</PostCardTag>;
+            })}
+          </PostTagContainer>
           {(() => {
             const date = new Date(file.data.attributes.published_at);
             if (date) {
@@ -104,9 +124,12 @@ const Header = () => {
   );
 };
 
-const Layout = (frontMatter: any) => {
-  console.log(frontMatter);
-
+const Layout = (frontMatter: {
+  tags: string;
+  title: any;
+  published_at: string;
+  __resourcePath: string;
+}) => {
   const Component: React.FC = (props) => {
     return (
       <div css={css``}>
@@ -172,20 +195,31 @@ const Layout = (frontMatter: any) => {
                 css={css`
                   font-size: 12px;
                   display: flex;
-                  justify-content: flex-end;
+                  justify-content: space-between;
                 `}
               >
-                公開日: {dateToString(frontMatter.published_at)}
-                <a
-                  href={`https://github.com/wawoon/blog/blob/master/pages/${frontMatter.__resourcePath}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <PostTagContainer>
+                  {frontMatter.tags.split(" ").map((tag, i) => {
+                    return <PostCardTag key={`tag-${i}`}>{tag}</PostCardTag>;
+                  })}
+                </PostTagContainer>
+                <div
                   css={css`
-                    margin-left: 8px;
+                    display: flex;
                   `}
                 >
-                  GitHub
-                </a>
+                  公開日: {dateToString(new Date(frontMatter.published_at))}
+                  <a
+                    href={`https://github.com/wawoon/blog/blob/master/pages/${frontMatter.__resourcePath}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    css={css`
+                      margin-left: 8px;
+                    `}
+                  >
+                    GitHub
+                  </a>
+                </div>
               </div>
               {props.children}
             </div>

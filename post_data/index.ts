@@ -3,7 +3,11 @@ const raw = require("./raw");
 type FileData = {
   filename: string;
   data: {
-    attributes: any;
+    attributes: {
+      title: string;
+      tags: string;
+      published_at: string;
+    };
     body: string;
   };
 }[];
