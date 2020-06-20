@@ -23,7 +23,7 @@ https://github.com/prismagraphql/prisma
 
 たとえば以下のようなスキーマを定義して、
 
-```
+```graphql
 type User {
   id: ID! @unique
   name: String!
@@ -88,7 +88,7 @@ graphql-yogaはNode.jsのライブラリで、Express.jsのミドルウェアと
 例（[チュートリアルより](https://www.prisma.io/docs/tutorials/build-graphql-servers/development/build-a-graphql-server-with-prisma-ohdaiyoo6c#step-5:-instantiate-the-prisma-binding)）
 
 
-```
+```js
 const { GraphQLServer } = require('graphql-yoga')
 const { Prisma } = require('prisma-binding')
 

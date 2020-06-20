@@ -4,6 +4,7 @@ import { CacheProvider, css } from "@emotion/core";
 import { cache } from "emotion";
 import { MDXProvider } from "@mdx-js/react";
 import "normalize.css"; // amp対応するときは書き換えする
+import { CodeBlock } from "../components/posts/CodeBlock";
 
 export default class MyApp extends App {
   render() {
@@ -15,40 +16,46 @@ export default class MyApp extends App {
           components={{
             img: (props) => {
               return (
-                <img
+                <div
                   css={css`
-                    box-sizing: border-box;
                     width: 100%;
-                  `}
-                  src={props.src}
-                />
-              );
-            },
-            pre: (props) => {
-              return (
-                <pre
-                  css={css`
-                    box-sizing: border-box;
-                    width: 100%;
-                    background: #eee;
-                    padding: 12px;
-                    overflow: auto;
+                    display: flex;
+                    jusitfy-content: center;
                   `}
                 >
-                  {props.children}
-                </pre>
+                  <img
+                    css={css`
+                      margin: 0 auto;
+                      box-sizing: border-box;
+                      width: 100%;
+                      max-width: 600px;
+                      max-height: 600px;
+                      object-fit: contain;
+                    `}
+                    src={props.src}
+                  />
+                </div>
               );
             },
+            // pre: (props) => {
+            //   return (
+            //     <pre
+            //       css={css`
+            //         box-sizing: border-box;
+            //         width: 100%;
+            //         background: #eee;
+            //         padding: 12px;
+            //         overflow: auto;
+            //       `}
+            //     >
+            //       {props.children}
+            //     </pre>
+            //   );
+            // },
             code: (props) => (
-              <code
-                css={css`
-                  box-sizing: border-box;
-                  width: 100%;
-                  color: #333;
-                `}
-              >
+              <CodeBlock className={props.className}>
                 {props.children}
-              </code>
+              </CodeBlock>
             ),
             inlineCode: (props) => {
               return (
