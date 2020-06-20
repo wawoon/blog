@@ -105,6 +105,8 @@ const Header = () => {
 };
 
 const Layout = (frontMatter: any) => {
+  console.log(frontMatter);
+
   const Component: React.FC = (props) => {
     return (
       <div css={css``}>
@@ -174,6 +176,16 @@ const Layout = (frontMatter: any) => {
                 `}
               >
                 公開日: {dateToString(frontMatter.published_at)}
+                <a
+                  href={`https://github.com/wawoon/blog/blob/master/pages/${frontMatter.__resourcePath}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  css={css`
+                    margin-left: 8px;
+                  `}
+                >
+                  GitHub
+                </a>
               </div>
               {props.children}
             </div>
