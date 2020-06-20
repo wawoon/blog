@@ -4,13 +4,10 @@ import Highlight, { defaultProps, Language } from "prism-react-renderer";
 import theme from "prism-react-renderer/themes/vsDark";
 // @ts-ignore
 import Prism from "prism-react-renderer/prism";
-
-// @ts-ingore
-(typeof global !== "undefined" ? global : window).Prism = Prism;
+((typeof global !== "undefined" ? global : window) as any).Prism = Prism;
 
 require("prismjs/components/prism-ruby");
 require("prismjs/components/prism-graphql");
-// require("prismjs/components/prism-csharp");
 
 export const CodeBlock = ({
   children,
