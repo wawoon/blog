@@ -3,6 +3,7 @@ title: React 16.6で追加されたReact.Suspenseについて
 tags: React suspense
 author: wawoon
 slide: false
+published_at: 2018-10-29
 ---
 2018/10/23にReact16.6がリリースされています
 
@@ -100,7 +101,7 @@ class NewsDetailPage extends React.Component {
       console.error(e)
     }
   }
-  
+
   componentDidMount() {
     this.fetchData()
   }
@@ -146,7 +147,7 @@ const NewsLayoutSuspense = (props) => {
     // 初回renderには以下はreturnされない。
     return <NewsDetailLayout news={newsData} />
   }
-} 
+}
 
 const NewsDetailPage = (props) => {
   return (
@@ -171,7 +172,7 @@ react-cache https://github.com/facebook/react/tree/master/packages/react-cache
 [Reactの次期機能のSuspenseが凄くって、非同期処理がどんどん簡単になってた！](https://qiita.com/fumihiko-hidaka/items/c3aaedd073f7bf5a685f)
 https://github.com/facebook/react/releases
 
-※Suspenseについては、ここ数ヶ月でAPIの命名がかなり変わっているので注意。 
+※Suspenseについては、ここ数ヶ月でAPIの命名がかなり変わっているので注意。
 
 名称が変わった例:
 

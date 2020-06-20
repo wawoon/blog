@@ -3,6 +3,7 @@ title: Relay Cursor Connectionsの仕様と実装方法について
 tags: GraphQL Relay
 author: wawoon
 slide: false
+published_at: 2019-07-14
 ---
 # Relay Cursor Connectionsとはなにか
 
@@ -89,7 +90,7 @@ query {
      {
        "node": { "id": "post:2", "title": "title", "body": "body" },
        "cursor": "post:2"
-     },     
+     },
      (中略)
      {
        "node": { "id": "post:9", "title": "title", "body": "body" },
@@ -106,7 +107,7 @@ query {
      "startCursor": "post:1",
      "endCursor": "post:10"
    }
- } 
+ }
 }
 ```
 

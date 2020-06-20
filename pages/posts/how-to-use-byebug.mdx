@@ -3,6 +3,7 @@ title: 1分でわかるbyebugの使い方
 tags: Ruby byebug デバッグ
 author: wawoon
 slide: false
+published_at: 2018-05-22
 ---
 #　お題
 
@@ -70,7 +71,7 @@ Fizz
 28
 29
 FizzBuzz
-``` 
+```
 
 どうやら、Fizzのあとと、Buzzのあとに余計な数字が出力されています。困った。
 
@@ -151,7 +152,7 @@ Buzz
    10:   elsif num % 3 == 0
    11:     puts "Fizz"
    12:   end
-   13: 
+   13:
 => 14:   puts num
    15: end
 ```
@@ -173,7 +174,7 @@ Buzz
 
 [1, 10] in /Users/user/Desktop/fizz_bug.rb
     1: require 'byebug'
-    2: 
+    2:
     3: 1.upto(30).each do |num|
 =>  4:   if num % 15 == 0
     5:     puts "FizzBuzz"
@@ -182,7 +183,7 @@ Buzz
     8:     puts "Buzz"
     9:     debugger
    10:   elsif num % 3 == 0
-(byebug) 
+(byebug)
 ```
 
 どうやら14行目の`puts n`が実行されて、次のイテレーションに移ってしまったみたいです。
@@ -212,10 +213,10 @@ Buzz
    10:   elsif num % 3 == 0
    11:     puts "Fizz"
    12:   end
-   13: 
+   13:
 => 14:   puts num
    15: end
-(byebug) 
+(byebug)
 
 ```
 
@@ -227,7 +228,7 @@ Buzz
 
 ```
 (byebug) exit
-➜  Desktop 
+➜  Desktop
 ```
 
 # 完成版
