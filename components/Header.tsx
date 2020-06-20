@@ -3,6 +3,7 @@ import Link from "next/link";
 import { css } from "@emotion/core";
 import styled from "@emotion/styled";
 import tw from "tailwind.macro";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 
 const HeaderLink = styled.a`
   ${tw`text-red-600`}
@@ -12,6 +13,7 @@ const HeaderLink = styled.a`
 `;
 
 interface Props {
+  sidebarOpen: boolean;
   sidebarToggle: () => void;
 }
 
@@ -31,24 +33,40 @@ export const Header = (props: Props) => {
         border-bottom: 2px solid #eee;
       `}
     >
-      <div css={css``} onClick={props.sidebarToggle}>
-        toggle
-      </div>
       <div
         css={css`
-          font-weight: bold;
-          padding: 12px;
+          display: flex;
+          align-items: center;
         `}
       >
-        <Link href={"/"} passHref>
-          <a
-            css={css`
-              text-decoration: none;
-            `}
-          >
-            wawoon.dev
-          </a>
-        </Link>
+        <div
+          css={css`
+            ${tw`hidden md:flex`}
+          `}
+          onClick={props.sidebarToggle}
+        >
+          {props.sidebarOpen ? (
+            <FaAngleLeft size={20} />
+          ) : (
+            <FaAngleRight size={20} />
+          )}
+        </div>
+        <div
+          css={css`
+            font-weight: bold;
+            padding: 12px;
+          `}
+        >
+          <Link href={"/"} passHref>
+            <a
+              css={css`
+                text-decoration: none;
+              `}
+            >
+              wawoon.dev
+            </a>
+          </Link>
+        </div>
       </div>
       <div
         css={css`

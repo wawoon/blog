@@ -6,10 +6,12 @@ import { Header } from "../components/Header";
 import { SideBarPostCard } from "../components/SideBarPostCard";
 import { PostMain } from "../components/posts/PostHeader";
 import { PostHeader } from "../components/posts/PostMain";
+import { useWindowSize } from "../hooks/useWIndowSize";
 
 const Layout = (frontMatter: FrontMatter) => {
   const Component: React.FC = (props) => {
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
+    const size = useWindowSize();
 
     return (
       <div
@@ -29,7 +31,11 @@ const Layout = (frontMatter: FrontMatter) => {
               ${tw`w-full`}
               ${tw`md:w-1/4 lg:w-1/5`}
             `}
-            style={sidebarOpen ? {} : { width: 0 }}
+            style={
+              sidebarOpen || size.width == undefined || size.width < 768
+                ? {}
+                : { width: 0 }
+            }
           >
             <div
               css={css`
@@ -54,7 +60,10 @@ const Layout = (frontMatter: FrontMatter) => {
               overflow: auto;
             `}
           >
-            <Header sidebarToggle={() => setSidebarOpen(!sidebarOpen)} />
+            <Header
+              sidebarOpen={sidebarOpen}
+              sidebarToggle={() => setSidebarOpen(!sidebarOpen)}
+            />
             <div
               css={css`
                 word-break: break-word;
