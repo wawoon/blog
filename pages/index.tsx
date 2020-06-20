@@ -1,6 +1,8 @@
 import { createRedirectComponent } from "../lib/redirect";
+import postData from "../post_data";
+const latestPostSlug = postData[0].filename.replace(".mdx", "");
 
 export default createRedirectComponent({
-  redirectTo: "/posts/08ee0e4230893a770cce",
+  redirectTo: `/posts/${latestPostSlug}`,
   statusCode: 301,
 });

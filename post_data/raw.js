@@ -15,7 +15,16 @@ for (const filename of mdxFiles) {
   );
   const data = fm(content);
   const { attributes, body } = data;
-  list.push({ filename, data: { attributes, body } });
+  list.push({
+    filename,
+    data: { attributes, body },
+  });
 }
+
+list.sort((a, b) => {
+  const aa = new Date(a.data.attributes.published_at).getTime();
+  const bb = new Date(b.data.attributes.published_at).getTime();
+  return aa < bb ? 1 : -1;
+});
 
 module.exports = list;
