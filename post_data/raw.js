@@ -9,6 +9,10 @@ const mdxFiles = fs.readdirSync(postsDirectory);
 let list = [];
 
 for (const filename of mdxFiles) {
+  if (!filename.includes(".md")) {
+    continue;
+  }
+
   const content = fs.readFileSync(
     path.join(process.cwd(), postDirPath, filename),
     { encoding: "utf-8" },
