@@ -10,8 +10,9 @@ import { useWindowSize } from "../hooks/useWIndowSize";
 
 const Layout = (frontMatter: FrontMatter) => {
   const Component: React.FC = (props) => {
-    const [sidebarOpen, setSidebarOpen] = React.useState(true);
+    const [sidebarOpen, setSidebarOpen] = React.useState(false);
     const size = useWindowSize();
+    const showSidebar = sidebarOpen || (size.width && size.width < 768);
 
     return (
       <div
@@ -31,11 +32,7 @@ const Layout = (frontMatter: FrontMatter) => {
               ${tw`w-full`}
               ${tw`md:w-1/4 lg:w-1/5`}
             `}
-            style={
-              sidebarOpen || size.width == undefined || size.width < 768
-                ? {}
-                : { width: 0 }
-            }
+            style={showSidebar ? {} : { width: 0 }}
           >
             <div
               css={css`
