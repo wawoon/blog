@@ -17,7 +17,7 @@ const Layout = (frontMatter: FrontMatter) => {
     return (
       <div
         css={css`
-          background: #eef0f1;
+          background: #fffff;
         `}
       >
         <div
@@ -71,6 +71,7 @@ const Layout = (frontMatter: FrontMatter) => {
                 <PostHeader frontMatter={frontMatter} />
                 {props.children}
               </PostMain>
+
               <div
                 css={css`
                   font-size: 12px;
@@ -78,6 +79,7 @@ const Layout = (frontMatter: FrontMatter) => {
                   justify-content: center;
                   align-items: center;
                   color: #999;
+                  margin-top: 24px;
                   margin-bottom: 24px;
                 `}
               >
