@@ -11,11 +11,15 @@ const HeaderLink = styled.a`
   }
 `;
 
-export const Header = () => {
+interface Props {
+  sidebarToggle: () => void;
+}
+
+export const Header = (props: Props) => {
   return (
     <div
       css={css`
-        height: 60px;
+        height: 48px;
         position: sticky;
         display: flex;
         align-items: center;
@@ -27,6 +31,9 @@ export const Header = () => {
         border-bottom: 2px solid #eee;
       `}
     >
+      <div css={css``} onClick={props.sidebarToggle}>
+        toggle
+      </div>
       <div
         css={css`
           font-weight: bold;

@@ -9,9 +9,14 @@ import { PostHeader } from "../components/posts/PostMain";
 
 const Layout = (frontMatter: FrontMatter) => {
   const Component: React.FC = (props) => {
+    const [sidebarOpen, setSidebarOpen] = React.useState(true);
+
     return (
-      <div css={css``}>
-        <Header />
+      <div
+        css={css`
+          background: #eef0f1;
+        `}
+      >
         <div
           css={css`
             ${tw`flex flex-col-reverse md:flex-row`}
@@ -19,9 +24,12 @@ const Layout = (frontMatter: FrontMatter) => {
         >
           <div
             css={css`
+              background: #fff;
+              transition: 0.3s;
               ${tw`w-full`}
               ${tw`md:w-1/4 lg:w-1/5`}
             `}
+            style={sidebarOpen ? {} : { width: 0 }}
           >
             <div
               css={css`
@@ -31,6 +39,7 @@ const Layout = (frontMatter: FrontMatter) => {
                 flex-direction: column;
                 overflow-y: scroll;
                 max-height: 100vh;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.26);
               `}
             >
               {fileData.map((file) => {
@@ -43,40 +52,44 @@ const Layout = (frontMatter: FrontMatter) => {
             css={css`
               flex: 1;
               overflow: auto;
-              word-break: break-word;
-              background: #eef0f1;
-
-              ${tw`md:p-4`}
             `}
           >
-            <PostMain>
-              <PostHeader frontMatter={frontMatter} />
-              {props.children}
-            </PostMain>
+            <Header sidebarToggle={() => setSidebarOpen(!sidebarOpen)} />
             <div
               css={css`
-                font-size: 12px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                color: #999;
+                word-break: break-word;
+                ${tw`md:p-4`}
               `}
             >
+              <PostMain>
+                <PostHeader frontMatter={frontMatter} />
+                {props.children}
+              </PostMain>
               <div
                 css={css`
-                  margin-bottom: 8px;
+                  font-size: 12px;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  color: #999;
+                  margin-bottom: 24px;
                 `}
               >
-                powered by Next.js
+                <div
+                  css={css`
+                    margin-right: 8px;
+                  `}
+                >
+                  powered by Next.js
+                </div>
+                <a
+                  href="https://github.com/wawoon/blog"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  source
+                </a>
               </div>
-              <a
-                href="https://github.com/wawoon/blog"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                source
-              </a>
             </div>
           </div>
         </div>
