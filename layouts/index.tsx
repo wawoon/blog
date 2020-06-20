@@ -3,36 +3,7 @@ import Link from "next/link";
 import { css } from "@emotion/core";
 import styled from "@emotion/styled";
 import tw from "tailwind.macro";
-
-const fileData: {
-  filename: string;
-  data: {
-    attributes: any;
-    body: string;
-    bodyBegin: number;
-    frontmatter: string;
-  };
-}[] =
-  //@ts-ignore
-  preval`
-  const fs = require('fs');
-  const path = require('path');
-  const fm = require('front-matter');
-
-  const postDirPath = 'pages/posts';
-  const postsDirectory = path.join(process.cwd(), postDirPath)
-  const mdxFiles = fs.readdirSync(postsDirectory)
-  let list = [];
-
-  for (const filename of mdxFiles) {
-    const content = fs.readFileSync(path.join(process.cwd(), postDirPath, filename), { encoding: "utf-8" });
-    const data = fm(content);
-    const { attributes, body } = data;
-    list.push({ filename, data: { attributes, body } });
-  }
-
-  module.exports = list;
-`;
+import fileData from "../post_data";
 
 const HeaderLink = styled.a`
   ${tw`text-red-600`}
