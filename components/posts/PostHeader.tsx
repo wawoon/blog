@@ -2,6 +2,7 @@ import React from "react";
 import { css } from "@emotion/core";
 import { dateToString } from "../../lib/date";
 import { PostTagContainer, PostTag } from "../PostTag";
+import Link from "next/link";
 
 export const PostHeader = ({ frontMatter }: { frontMatter: FrontMatter }) => {
   return (
@@ -20,9 +21,21 @@ export const PostHeader = ({ frontMatter }: { frontMatter: FrontMatter }) => {
           justify-content: space-between;
         `}
       >
-        <PostTagContainer>
+        <PostTagContainer
+          css={css`
+            a {
+              text-decoration: none;
+            }
+          `}
+        >
           {frontMatter.tags.split(" ").map((tag, i) => {
-            return <PostTag key={`tag-${i}`}>{tag}</PostTag>;
+            return (
+              <Link href={`/tags/[slug]`} as={`/tags/${tag}`}>
+                <a>
+                  <PostTag key={`tag-${i}`}>{tag}</PostTag>
+                </a>
+              </Link>
+            );
           })}
         </PostTagContainer>
         <div
