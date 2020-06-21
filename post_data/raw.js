@@ -18,10 +18,16 @@ for (const filename of mdxFiles) {
     { encoding: "utf-8" },
   );
   const data = fm(content);
-  const { attributes, body } = data;
+  const { attributes } = data;
   list.push({
     filename,
-    data: { attributes, body },
+    data: {
+      attributes: {
+        title: attributes.title,
+        tags: attributes.tags,
+        published_at: attributes.published_at,
+      },
+    },
   });
 }
 
