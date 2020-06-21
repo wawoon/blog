@@ -33,6 +33,7 @@ export const Layout: React.FC = (props) => {
               css={css`
                 font-size: 12px;
                 display: flex;
+                flex-direction: column;
                 justify-content: center;
                 align-items: center;
                 color: #999;
@@ -42,17 +43,20 @@ export const Layout: React.FC = (props) => {
             >
               <div
                 css={css`
-                  margin-right: 8px;
+                  margin-bottom: 8px;
                 `}
               >
-                powered by Next.js
+                This site uses Google Analytics.
               </div>
               <a
+                css={css`
+                  margin-bottom: 8px;
+                `}
                 href="https://github.com/wawoon/blog"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                source
+                source code
               </a>
             </div>
           </div>
