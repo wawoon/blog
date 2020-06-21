@@ -24,7 +24,7 @@ export default class extends Document {
             // @ts-ignore
             emotionCss={this.props.css}
           />
-          {/* <AmpScripts /> */}
+          <AmpScripts />
         </Head>
         <body>
           <Main />
@@ -73,35 +73,32 @@ const StyleTag: React.FC<{
 const AmpScripts = () => {
   const isAmp = useAmp();
   if (!isAmp) {
-    return null;
+    return (
+      <>
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+        ></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+    `,
+          }}
+        />
+      </>
+    );
   }
 
   return (
     <>
       <script
         async
-        custom-element="amp-carousel"
-        src="https://cdn.ampproject.org/v0/amp-carousel-0.2.js"
-      />
-      <script
-        async
-        custom-element="amp-sidebar"
-        src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"
-      />
-      <script
-        async
-        custom-element="amp-iframe"
-        src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"
-      />
-      <script
-        async
-        custom-element="amp-ad"
-        src="https://cdn.ampproject.org/v0/amp-ad-0.1.js"
-      />
-      <script
-        async
-        custom-element="amp-form"
-        src="https://cdn.ampproject.org/v0/amp-form-0.1.js"
+        custom-element="amp-analytics"
+        src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"
       ></script>
     </>
   );

@@ -8,6 +8,7 @@ import { CodeBlock } from "../components/posts/CodeBlock";
 import { useAmp } from "next/amp";
 import { DefaultSeo } from "next-seo";
 import SEO from "../next-seo.config";
+import { AmpGAStarter } from "../components/amp/AmpGAStarter";
 
 export default class MyApp extends App {
   render() {
@@ -84,6 +85,7 @@ export default class MyApp extends App {
         >
           <DefaultSeo {...SEO} />
           <Component {...pageProps} />
+          <AmpGAStarter />
         </MDXProvider>
       </CacheProvider>
     );
