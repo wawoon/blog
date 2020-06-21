@@ -1,8 +1,24 @@
-import { createRedirectComponent } from "../lib/redirect";
 import postData from "../post_data";
-const latestPostSlug = postData[0].filename.replace(".mdx", "");
+import { Layout } from "../components/Layout";
+import { css } from "@emotion/core";
+import { PostCard } from "../components/PostCard";
 
-export default createRedirectComponent({
-  redirectTo: `/posts/${latestPostSlug}`,
-  statusCode: 301,
-});
+export default () => {
+  return (
+    <Layout>
+      <main
+        css={css`
+          margin: 0 auto;
+          width: 100%;
+          max-width: 768px;
+        `}
+      >
+        {postData.map((post, i) => (
+          <PostCard key={`post-${i}`} post={post} />
+        ))}
+      </main>
+    </Layout>
+  );
+};
+
+export const config = { amp: true };

@@ -4,6 +4,7 @@ import { css } from "@emotion/core";
 import styled from "@emotion/styled";
 import tw from "tailwind.macro";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
+import { useAmp } from "next/amp";
 
 const HeaderLink = styled.a`
   ${tw`text-red-600`}
@@ -18,6 +19,8 @@ interface Props {
 }
 
 export const Header = (props: Props) => {
+  const isAmp = useAmp();
+
   return (
     <div
       css={css`
@@ -39,18 +42,20 @@ export const Header = (props: Props) => {
           align-items: center;
         `}
       >
-        <div
-          css={css`
-            ${tw`hidden md:flex`}
-          `}
-          onClick={props.sidebarToggle}
-        >
-          {props.sidebarOpen ? (
-            <FaAngleLeft size={20} />
-          ) : (
-            <FaAngleRight size={20} />
-          )}
-        </div>
+        {!isAmp && (
+          <div
+            css={css`
+              ${tw`hidden md:flex`}
+            `}
+            onClick={props.sidebarToggle}
+          >
+            {props.sidebarOpen ? (
+              <FaAngleLeft size={20} />
+            ) : (
+              <FaAngleRight size={20} />
+            )}
+          </div>
+        )}
         <div
           css={css`
             font-weight: bold;

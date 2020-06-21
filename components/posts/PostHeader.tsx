@@ -1,15 +1,48 @@
-import tw from "tailwind.macro";
-import styled from "@emotion/styled";
+import React from "react";
+import { css } from "@emotion/core";
+import { dateToString } from "../../lib/date";
+import { PostTagContainer, PostTag } from "../PostTag";
 
-export const PostMain = styled.main`
-  box-sizing: border-box;
-  max-width: 768px;
-  margin: 0 auto;
-  line-height: 1.7;
-
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 28px 28px 56px #a6a6a6, -28px -28px 56px #ffffff;
-
-  ${tw`p-4 mt-4 mb-4 md:p-8`}
-`;
+export const PostHeader = ({ frontMatter }: { frontMatter: FrontMatter }) => {
+  return (
+    <div>
+      <h1
+        css={css`
+          font-size: 2rem;
+        `}
+      >
+        {frontMatter.title}
+      </h1>
+      <div
+        css={css`
+          font-size: 12px;
+          display: flex;
+          justify-content: space-between;
+        `}
+      >
+        <PostTagContainer>
+          {frontMatter.tags.split(" ").map((tag, i) => {
+            return <PostTag key={`tag-${i}`}>{tag}</PostTag>;
+          })}
+        </PostTagContainer>
+        <div
+          css={css`
+            display: flex;
+          `}
+        >
+          公開日: {dateToString(new Date(frontMatter.published_at))}
+          <a
+            href={`https://github.com/wawoon/blog/blob/master/pages/${frontMatter.__resourcePath}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            css={css`
+              margin-left: 8px;
+            `}
+          >
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};

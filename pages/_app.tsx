@@ -5,6 +5,7 @@ import { cache } from "emotion";
 import { MDXProvider } from "@mdx-js/react";
 import "normalize.css"; // amp対応するときは書き換えする
 import { CodeBlock } from "../components/posts/CodeBlock";
+import { useAmp } from "next/amp";
 
 export default class MyApp extends App {
   render() {
@@ -15,6 +16,26 @@ export default class MyApp extends App {
         <MDXProvider
           components={{
             img: (props) => {
+              const isAmp = useAmp();
+              if (isAmp) {
+                return (
+                  <div
+                    css={css`
+                      position: relative;
+                      width: 100%;
+                      height: 400px;
+                    `}
+                  >
+                    <amp-img
+                      css={css`
+                        object-fit: contain;
+                      `}
+                      src={props.src}
+                      layout="fill"
+                    />
+                  </div>
+                );
+              }
               return (
                 <div
                   css={css`
@@ -37,21 +58,6 @@ export default class MyApp extends App {
                 </div>
               );
             },
-            // pre: (props) => {
-            //   return (
-            //     <pre
-            //       css={css`
-            //         box-sizing: border-box;
-            //         width: 100%;
-            //         background: #eee;
-            //         padding: 12px;
-            //         overflow: auto;
-            //       `}
-            //     >
-            //       {props.children}
-            //     </pre>
-            //   );
-            // },
             code: (props) => (
               <CodeBlock className={props.className}>
                 {props.children}
