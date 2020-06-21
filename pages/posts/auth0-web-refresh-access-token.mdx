@@ -5,6 +5,8 @@ author: wawoon
 slide: false
 published_at: 2018-06-06
 ---
+export const config = { amp: true }
+
 # 解決したい課題
 
 Auth0で発行するaccess_tokenはデフォルトで2時間まで有効なので、セッションが2時間を超えるとそのトークンを使ったAPI通信ができなくなる
@@ -29,4 +31,3 @@ https://auth0.com/docs/quickstart/spa/react/05-token-renewal
   - Auth0側のセッションの継続時間はデフォルトで1週間。
   - https://auth0.com/docs/dashboard/dashboard-tenant-settings#session-timeout
 - そのチェックを行うのがcheckSessionメソッドで、これをaccess_tokenがexpireする時間に合わせて、setIntervalで実行すると最小限のAPIリクエストで有効なaccess_tokenを維持し続けられる。
-
