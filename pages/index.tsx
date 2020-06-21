@@ -2,10 +2,12 @@ import postData from "../post_data";
 import { Layout } from "../components/Layout";
 import { css } from "@emotion/core";
 import { PostCard } from "../components/PostCard";
+import { NextSeo } from "next-seo";
 
 export default () => {
   return (
     <Layout>
+      <NextSeo title={"wawoon.dev"} titleTemplate="%s" />
       <main
         css={css`
           margin: 0 auto;

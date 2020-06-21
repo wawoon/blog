@@ -13,6 +13,7 @@
     "emotion-server": "^10.0.27",
     "next": "^9.4.4",
     "next-mdx-enhanced": "^3.0.0",
+    "next-seo": "^4.5.0",
     "normalize.css": "^8.0.1",
     "prism-react-renderer": "^1.1.1",
     "prismjs": "^1.20.0",

@@ -6,6 +6,8 @@ import { MDXProvider } from "@mdx-js/react";
 import "normalize.css"; // amp対応するときは書き換えする
 import { CodeBlock } from "../components/posts/CodeBlock";
 import { useAmp } from "next/amp";
+import { DefaultSeo } from "next-seo";
+import SEO from "../next-seo.config";
 
 export default class MyApp extends App {
   render() {
@@ -80,6 +82,7 @@ export default class MyApp extends App {
             },
           }}
         >
+          <DefaultSeo {...SEO} />
           <Component {...pageProps} />
         </MDXProvider>
       </CacheProvider>

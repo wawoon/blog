@@ -4,6 +4,7 @@ import { css } from "@emotion/core";
 import { PostCard } from "../../components/PostCard";
 import { useRouter } from "next/router";
 import { GetStaticProps, GetStaticPaths } from "next";
+import { NextSeo } from "next-seo";
 
 interface Props {
   matched: typeof postData;
@@ -14,6 +15,7 @@ export default (props: Props) => {
 
   return (
     <Layout>
+      <NextSeo title={`${router.query.slug}を含む記事`} />
       <main
         css={css`
           margin: 0 auto;
