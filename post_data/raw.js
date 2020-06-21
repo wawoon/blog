@@ -27,6 +27,7 @@ for (const filename of mdxFiles) {
         tags: attributes.tags,
         published_at: attributes.published_at,
       },
+      body: data.body,
     },
   });
 }

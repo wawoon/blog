@@ -7,7 +7,7 @@ export const PostTagContainer = styled.div`
 
 export const PostTag = styled.span`
   display: inline-block;
-  padding: 2px;
+  padding: 4px 6px;
   border-radius: 4px;
   background: #666;
   color: #fff;
