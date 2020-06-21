@@ -12,4 +12,6 @@ type FileData = {
   };
 }[];
 
+// console.log(Object.keys(raw));
+
 export default raw as FileData;

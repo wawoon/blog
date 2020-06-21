@@ -24,7 +24,7 @@ export default class extends Document {
             // @ts-ignore
             emotionCss={this.props.css}
           />
-          <AmpScripts />
+          {/* <AmpScripts /> */}
         </Head>
         <body>
           <Main />

@@ -12,6 +12,7 @@ const LayoutWithPost = (frontMatter: FrontMatter) => {
       post.filename === frontMatter.__resourcePath.replace("posts/", ""),
   );
   if (!file) {
+    console.log(frontMatter.__resourcePath.replace("posts/", ""));
     throw new Error("not found file");
   }
 
