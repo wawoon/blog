@@ -15,7 +15,10 @@ export default (props: Props) => {
 
   return (
     <Layout>
-      <NextSeo title={`${router.query.slug}を含む記事`} />
+      <NextSeo
+        title={`${router.query.slug}を含む記事`}
+        description={`${router.query.slug}を含む記事が${props.matched.length}件あります`}
+      />
       <main
         css={css`
           margin: 0 auto;
