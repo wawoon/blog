@@ -15,6 +15,7 @@ const LayoutWithPost = (frontMatter: FrontMatter) => {
     throw new Error("not found file");
   }
 
+  // 最初の行は意図的に無視する. export const config = { amp: true };などが含まれる想定なため。
   let description =
     file.data.body
       .split("\n")
