@@ -3,6 +3,7 @@ import { Layout } from "../components/Layout";
 import { css } from "@emotion/core";
 import { PostCard } from "../components/PostCard";
 import { NextSeo } from "next-seo";
+import Link from "next/link";
 
 export default () => {
   return (
@@ -33,7 +34,7 @@ export default () => {
           `}
         >
           This is a personal blog by Yoshinori Kosaka. I work as a software
-          enginner in Japan.
+          enginner in Japan. <Link href={`/posts/about`}>About (Japanese)</Link>
         </div>
 
         <h2
