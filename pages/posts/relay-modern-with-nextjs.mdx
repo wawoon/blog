@@ -77,7 +77,7 @@ export default function App({ Component, pageProps }) {
 - これは後述しますが、Next.jsのSSG化のためにはすべてをjsonとしてキャッシュする必要があるため必要な処理です。
 - 通常であれば[QueryRenderer](https://relay.dev/docs/en/query-renderer)などを利用してReact内でローディング状態をハンドリングしながらレンダリングします
 
-### 2.`initialRecords`を返しておりクライアント側に送り, `_app.jsx`内でenvironmentを復元していること
+### 2.getStaticProps内で`initialRecords`を返しており, `_app.jsx`内でenvironmentを復元していること
 
 - Relayではfragmentの内容はfetchQueryの返り値の中には含まれておらず、fragmentの内容は実際にはenvironmentのなかに入っています
 - initialRecordsをgetStaticPropsで送ることで、クライアントサイドで全pagesで共通で実行される_appで受け取り、environmentを復元することでfragment機能を壊さないようしています。
