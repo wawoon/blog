@@ -28,7 +28,18 @@ const LayoutWithPost = (frontMatter: FrontMatter) => {
     return (
       <Layout>
         <PostMain>
-          <NextSeo title={frontMatter.title} description={description} />
+          <NextSeo
+            title={frontMatter.title}
+            description={description}
+            openGraph={{
+              title: frontMatter.title,
+              description: description,
+              url: `https://wawoon.dev/${frontMatter.__resourcePath.replace(
+                ".mdx",
+                "",
+              )}`,
+            }}
+          />
           <PostHeader frontMatter={frontMatter} />
           {props.children}
         </PostMain>
