@@ -5,5 +5,6 @@ type FrontMatter = {
   tags: string;
   title: any;
   published_at: string;
+  image?: string;
   __resourcePath: string;
 };

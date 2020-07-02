@@ -38,6 +38,9 @@ const LayoutWithPost = (frontMatter: FrontMatter) => {
                 ".mdx",
                 "",
               )}`,
+              images: frontMatter.image
+                ? [{ url: frontMatter.image }]
+                : undefined,
             }}
           />
           <PostHeader frontMatter={frontMatter} />
