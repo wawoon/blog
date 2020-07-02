@@ -19,6 +19,70 @@ https://github.com/vercel/next.js/tree/canary/examples/with-relay-modern
 自分がNext.js + Relay Modern + SSGで実装を始めたときには以下のexampleがなかったので苦労していました。
 （記事公開後に自分のバージョンも公開するかもしれません）
 
+以下が典型的なpagesの構成です。
+
+`pages/index.js`
+```tsx
+import Link from 'next/link'
+import { fetchQuery } from 'react-relay'
+import { initEnvironment } from '../lib/relay'
+import BlogPosts from '../components/BlogPosts'
+import indexPageQuery from '../queries/indexPage'
+
+const Index = ({ viewer }) => (
+  <div>
+    <Link href="/about">
+      <a>About</a>
+    </Link>
+    <BlogPosts viewer={viewer} />
+  </div>
+)
+
+export async function getStaticProps() {
+  const environment = initEnvironment()
+  const queryProps = await fetchQuery(environment, indexPageQuery)
+  const initialRecords = environment.getStore().getSource().toJSON()
+
+  return {
+    props: {
+      ...queryProps,
+      initialRecords,
+    },
+  }
+}
+
+export default Index
+```
+
+`pages/_app.js`
+```
+import { ReactRelayContext } from 'react-relay'
+import { useEnvironment } from '../lib/relay'
+
+export default function App({ Component, pageProps }) {
+  const environment = useEnvironment(pageProps.initialRecords)
+
+  return (
+    <ReactRelayContext.Provider value={{ environment, variables: {} }}>
+      <Component {...pageProps} />
+    </ReactRelayContext.Provider>
+  )
+}
+```
+
+## ポイント
+
+### 1.getStaticProps内でfetchQueryを行っており、Reactコンポーネント内ではデータを受け取っていること
+
+- これは後述しますが、Next.jsのSSG化のためにはすべてをjsonとしてキャッシュする必要があるため必要な処理です。
+- 通常であれば[QueryRenderer](https://relay.dev/docs/en/query-renderer)などを利用してReact内でローディング状態をハンドリングしながらレンダリングします
+
+### 2.`initialRecords`を返しておりクライアント側に送り, `_app.jsx`内でenvironmentを復元していること
+
+- Relayではfragmentの内容はfetchQueryの返り値の中には含まれておらず、fragmentの内容は実際にはenvironmentのなかに入っています
+- initialRecordsをgetStaticPropsで送ることで、クライアントサイドで全pagesで共通で実行される_appで受け取り、environmentを復元することでfragment機能を壊さないようしています。
+- fragmentを利用しないならばこの処理は必要ありませんが、利用するならば必須です。
+
 # なぜこの選定がよいのか？
 
 ## Next.jsとSSG
