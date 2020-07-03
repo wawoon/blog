@@ -16,9 +16,6 @@ Next.jsの9.3で導入されたgetStaticProps, および9.4で導入されたInc
 公式のexampleがすでにあるので見てください。
 https://github.com/vercel/next.js/tree/canary/examples/with-relay-modern
 
-自分がNext.js + Relay Modern + SSGで実装を始めたときには以下のexampleがなかったので苦労していました。
-（記事公開後に自分のバージョンも公開するかもしれません）
-
 以下が典型的なpagesの構成です。
 
 `pages/index.js`
@@ -116,9 +113,7 @@ Apolloの場合でも[graphql-code-generator](https://graphql-code-generator.com
 
 Relayは[fragment](https://vivit.hatenablog.com/entry/2020/05/22/193021)をはじめから使いやすくするための仕組みが入っています。
 デフォルトで`src`以下にあるコンポーネントを[createFragmentContainer](https://relay.dev/docs/en/fragment-container)でラップすると、他のクエリでfragmentを使えるようになります。
-また、`fragment`でラップされている側のコンポーネントでは、`fragment`内で指定されているフィールド以外は見ることができず、安全であり、もちろんTypeScriptの型も自動で生成されます。
-
-（apolloの場合は[graphql-anywhere](https://github.com/doomsower/graphql-anywhere)でフィルタする必要があります。）
+また、`fragment`でラップされている側のコンポーネントでは、`fragment`内で指定されているフィールド以外は見ることができず、安全であり、もちろんTypeScriptの型も自動で生成されます。（apolloの場合は[graphql-anywhere](https://github.com/doomsower/graphql-anywhere)でフィルタする必要があります。）
 
 自分の観測では、Apolloユーザーの方たちは`fragment`を活用するのに苦労している人たちが多い印象です。fragment使いたい人はRelayをおすすめします。
 
@@ -128,8 +123,9 @@ Next.js/SSGを念頭に置くと、[useQuery](https://www.apollographql.com/docs
 というのも、`getStaticProps`や、`getServerSideProps`はnodeで実行され、返り値のみがReactの世界に送出されます。
 したがってhooksなどを利用するのはクライアント側のみで実行結果を得たいときのみになります。
 
-なお、`getStaticProps`をつかってSSGされているページは、クライアント遷移時には`getStaticProps`の戻り値がjsonとしてクライアント側に送られます。
-これは`next/link`のprefetchにおいても同様で、ページ内にリンクが表示された瞬間にjsonを事前ダウンロードされ、遷移時はネットワークリクエストなしで遷移できるので非常に速いです。
+基本的に、クライアント側で取得する必要のないデータ取得はSSGに寄せるのが良いです。
+`getStaticProps`をつかってSSGされているページは、`next/link`の[prefetch機能](https://nextjs.org/docs/api-reference/next/link)により、ページ内にリンクが表示された瞬間にjsonを事前ダウンロードされ、遷移時はネットワークリクエストなしで遷移できるので非常に速いです。
+ユーザーアクセスが多い場合でもサーバーリクエストは`unstable_revalidate`で間引きされるので、そこまで増えないのでそこもメリットです。
 
 # GraphQLに関する相談をしたい人はこちら
 
