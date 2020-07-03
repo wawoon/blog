@@ -115,7 +115,7 @@ Relayは[fragment](https://vivit.hatenablog.com/entry/2020/05/22/193021)をは�
 デフォルトで`src`以下にあるコンポーネントを[createFragmentContainer](https://relay.dev/docs/en/fragment-container)でラップすると、他のクエリでfragmentを使えるようになります。
 また、`fragment`でラップされている側のコンポーネントでは、`fragment`内で指定されているフィールド以外は見ることができず、安全であり、もちろんTypeScriptの型も自動で生成されます。（apolloの場合は[graphql-anywhere](https://github.com/doomsower/graphql-anywhere)でフィルタする必要があります。）
 
-自分の観測では、Apolloユーザーの方たちは`fragment`を活用するのに苦労している人たちが多い印象です。fragment使いたい人はRelayをおすすめします。
+自分の観測では、Apolloユーザーの方たちは`fragment`を活用するのに苦労している人たちが多い印象です。fragmentを使いたい人はRelayをおすすめします。
 
 ### Next.jsで使うGraphQLライブラリはNodeで実行されるのであまり変わらない
 
