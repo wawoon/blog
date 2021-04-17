@@ -1,6 +1,6 @@
 import React from "react";
 import App from "next/app";
-import { CacheProvider, css } from "@emotion/core";
+import { CacheProvider, css, Global } from "@emotion/core";
 import { cache } from "emotion";
 import { MDXProvider } from "@mdx-js/react";
 import "normalize.css"; // amp対応するときは書き換えする
@@ -84,6 +84,16 @@ export default class MyApp extends App {
           }}
         >
           <DefaultSeo {...SEO} />
+          <Global styles={css`
+            body {
+              font-family: "Helvetica Neue",
+              Arial,
+              "Hiragino Kaku Gothic ProN",
+              "Hiragino Sans",
+              Meiryo,
+              sans-serif;
+            }
+          `} />
           <Component {...pageProps} />
           <AmpGAStarter />
         </MDXProvider>

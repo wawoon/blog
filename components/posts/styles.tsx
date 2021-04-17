@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 
 export const Wrapper = styled.div`
-  font-family: sans-serif;
   text-align: center;
 `;
 
