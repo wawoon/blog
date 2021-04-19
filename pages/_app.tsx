@@ -27,12 +27,14 @@ export default class MyApp extends App {
                       position: relative;
                       width: 100%;
                       height: 400px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
 
-                      amp-img {
+                      amp-img img {
                         object-fit: contain;
                       }
-                    `}
-                  >
+                  `}>
                     <amp-img src={props.src} layout="fill" />
                   </div>
                 );
