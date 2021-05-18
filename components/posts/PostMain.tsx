@@ -9,7 +9,7 @@ export const PostMain = styled.main`
   border-radius: 12px;
   background: #ffffff;
   box-shadow: 28px 28px 56px #a6a6a6, -28px -28px 56px #ffffff;
-  font-size: 14px;
+  font-size: 15px;
 
   ${tw`p-4 mt-4 mb-4 md:p-8`}
 `;
