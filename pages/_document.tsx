@@ -1,10 +1,16 @@
-import Document, { Html, Head, Main, NextScript } from "next/document";
+import Document, {
+  Html,
+  Head,
+  Main,
+  NextScript,
+  DocumentContext,
+} from "next/document";
 import React from "react";
 import { extractCritical } from "emotion-server";
 import { useAmp } from "next/amp";
 
-export default class extends Document {
-  static async getInitialProps(ctx: any) {
+export default class MyDocument extends Document {
+  static async getInitialProps(ctx: DocumentContext) {
     const page = ctx.renderPage();
     const styles = extractCritical(page.html);
     return {
@@ -35,10 +41,12 @@ export default class extends Document {
   }
 }
 
-const StyleTag: React.FC<{
-  emotionIds: any;
+interface StyleTagProps {
+  emotionIds: string[];
   emotionCss: string;
-}> = (props) => {
+}
+
+const StyleTag: React.FC<StyleTagProps> = (props) => {
   const isAmp = useAmp();
   if (isAmp) {
     return (
@@ -70,7 +78,7 @@ const StyleTag: React.FC<{
   );
 };
 
-const AmpScripts = () => {
+const AmpScripts: React.FC = () => {
   const isAmp = useAmp();
   if (!isAmp) {
     return (

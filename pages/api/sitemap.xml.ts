@@ -3,7 +3,13 @@ import { SitemapStream, streamToPromise } from "sitemap";
 import { createGzip } from "zlib";
 import postData from "../../post_data";
 
-let sitemap: any;
+// Cached sitemap. It will be initialised only once and re-used for subsequent
+// requests so that we do not have to regenerate it on every invocation.
+//
+// `SitemapStream#pipe(createGzip())` resolves to a `Buffer`, therefore the
+// cached value should be typed accordingly. It starts as `undefined` until the
+// first generation is finished.
+let sitemap: Buffer | undefined;
 
 module.exports = async (_req: NowRequest, res: NowResponse) => {
   res.setHeader("Content-Type", "application/xml");
