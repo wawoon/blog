@@ -6,8 +6,4 @@ module.exports = withMdxEnhanced({
   fileExtensions: ["md", "mdx"],
   remarkPlugins: [],
   rehypePlugins: [],
-  extendFrontMatter: {
-    process: (mdxContent, frontMatter) => {},
-    phase: "prebuild|loader|both",
-  },
 })({});
