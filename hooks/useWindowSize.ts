@@ -1,5 +1,9 @@
 import React from "react";
 
+// Return current window width & height in a React-friendly way.
+// The hook works on both client and server: on the server it returns
+// `undefined` for width/height so that SSR will match the client once
+// hydrated.
 export const useWindowSize = () => {
   const isClient = typeof window === "object";
 
@@ -23,7 +27,9 @@ export const useWindowSize = () => {
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []); // Empty array ensures that effect is only run on mount and unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run on mount & unmount only
 
   return windowSize;
 };
+

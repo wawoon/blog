@@ -3,7 +3,7 @@ declare module "tailwind.macro";
 
 type FrontMatter = {
   tags: string;
-  title: any;
+  title: string;
   published_at: string;
   image?: string;
   __resourcePath: string;
