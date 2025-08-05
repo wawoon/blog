@@ -4,7 +4,7 @@ import Highlight, { defaultProps, Language } from "prism-react-renderer";
 import theme from "prism-react-renderer/themes/vsDark";
 // @ts-ignore
 import Prism from "prism-react-renderer/prism";
-((typeof global !== "undefined" ? global : window) as any).Prism = Prism;
+((globalThis as any).Prism = Prism;
 
 require("prismjs/components/prism-ruby");
 require("prismjs/components/prism-graphql");
