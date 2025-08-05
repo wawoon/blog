@@ -1,0 +1,184 @@
+---
+title: Generative AI for Beginners – A Friendly Guide for Engineers
+description: A practical, engineer-oriented introduction to the world of generative AI with hands-on examples using the OpenAI API and Node.js.
+tags: GenerativeAI, OpenAI, JavaScript, NodeJS
+date: 2025-08-05
+published_at: 2025-08-05
+slide: false
+---
+
+export const config = { amp: true }
+
+# Generative AI for Beginners – A Friendly Guide for Engineers 🪄🤖
+
+Hello there!  ✨  Whether you have already shipped production code or you are still getting comfortable with `console.log`, chances are you have recently heard the words *Generative AI*, *Large Language Model* (LLM) or *GPT-4* in the hallway.  In this post we will unpack those buzzwords **without assuming any background in machine-learning theory**, and we will finish by writing a small Node.js program that talks to the OpenAI API in less than 50 lines of code.
+
+Feel free to follow along at your own pace.  Grab a cup of ☕, keep your editor open and let’s get building!
+
+---
+
+## 1. What *is* Generative AI, really?
+
+At its core, *Generative Artificial Intelligence* is a family of models that **create new content** rather than merely analysing existing data.  Content may be text, code, images, audio, 3-D meshes—you name it.
+
+If you ask ChatGPT to "write an 80-character haiku about TypeScript" you will receive something that did **not** exist on the internet before that moment.  The model *generates* each token step by step, predicting what *should* come next given everything it has produced so far.
+
+Generative models are not lookup tables and they do not literally copy their training data.  Instead they learn an *internal statistical representation* of language that allows them to synthesize novel combinations.  That property makes them amazingly useful—and sometimes surprisingly wrong. 😉
+
+## 2. Why do engineers care?
+
+From a software-engineering perspective, LLMs behave like an **intelligent, well-documented, but slightly unreliable remote service**.  They speak JSON, they charge per request, they sometimes hallucinate answers, and they improve fast.  Treat them as you treat any external dependency: isolate them behind interfaces, validate their output, and write tests for your prompts.
+
+Because LLMs are so general-purpose, the same API key can power features such as:
+
+* Autocompletion in an IDE
+* Summarising a customer support ticket
+* Generating SQL queries from natural-language questions
+* Translating marketing copy to 20 languages
+
+Learning how to integrate LLMs early will give you superpowers in your day job.
+
+## 3. Large Language Models 101 (Skip if you hate theory)
+
+You do **not** need to understand gradient descent to be productive, but having mental models helps when prompts misbehave.  Here is the 60-second version:
+
+* **Tokens** – LLMs do not read characters; they read tokens (≈ word fragments).  "banana" may be two tokens, "🧑‍💻" is sometimes one.  APIs bill per *prompt* tokens plus *completion* tokens.
+* **Embeddings** – Each token is mapped to a high-dimensional vector.  The model manipulates those vectors through layers of *attention*.
+* **Temperature** – A parameter that controls randomness.  Temperature 0 makes the model deterministic; temperature 1 is more creative.
+* **Context length** – The maximum number of tokens the model can consider at once (e.g. 8k or 32k).  Long prompts approach that limit quickly.
+
+For deeper dives, check out [The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) after finishing this article.
+
+## 4. Setting up the environment
+
+We will use Node.js ≥ 18 and the official `openai` NPM package.
+
+```bash
+mkdir generative-ai-hello && cd $_
+npm init -y
+npm install openai@^4.0 dotenv
+```
+
+Create a `.env` file in the project root and paste:
+
+```bash
+OPENAI_API_KEY="sk-..."
+```
+
+Never commit your key to Git.  `.env` belongs in `.gitignore`.
+
+## 5. First contact with the OpenAI API (Node.js)
+
+Below is a fully working script you can run with `node index.js`.  It sends a conversation to `gpt-4o-mini` (feel free to downgrade to `gpt-3.5-turbo` if your account lacks access) and prints the model’s reply.
+
+```js title="index.js"
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // defaults to process.env["OPENAI_API_KEY"]
+});
+
+async function main() {
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    temperature: 0.7,
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a cheerful JavaScript mentor who answers succinctly.'
+      },
+      {
+        role: 'user',
+        content: 'Explain JavaScript closures in one tweet.'
+      }
+    ],
+  });
+
+  console.log(completion.choices[0].message.content);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+```
+
+Run it:
+
+```bash
+node index.js
+```
+
+You should see a friendly, tweet-sized explanation appear in your terminal.  **Congratulations, you have just built your first generative-AI powered app!**
+
+### Breaking down the call
+
+1. **Model** – You can swap `gpt-4o-mini` for `gpt-3.5-turbo` or any future model name.
+2. **Messages** – A chat completion resembles a conversation.  Pass an array of `{ role, content }` objects.  The first *system* message defines behaviour; subsequent *user* / *assistant* messages add context.
+3. **Temperature** – We pass `0.7` to keep answers varied.  Use `0` when determinism is critical (e.g. evaluating code).
+
+## 6. Prompt-engineering basics
+
+Writing good prompts is more craft than science, but a few heuristics go a long way:
+
+* **Role priming** – Start with a system message that frames *who* the assistant is and *how* it should respond.
+* **Few-shot examples** – Show one or two input/output pairs before asking for new output.  This conditions the model to follow the pattern.
+* **Delimiters** – Use triple backticks or XML tags to clearly demarcate code vs. natural language.  LLMs love structure.
+* **Explicit format requests** – If you need JSON, say *"Respond with valid JSON and no additional commentary"*.
+* **Iterate and test** – Small prompt tweaks can change output dramatically.  Version-control your prompts and write automated tests when possible.
+
+## 7. Streaming (Bonus)
+
+Many user-facing features feel *snappier* when text appears token by token.  Switching our previous example to streaming is as easy as adding `stream: true` and iterating over the `completion` async iterator:
+
+```js title="index_stream.js"
+const completion = await openai.chat.completions.create({
+  model: 'gpt-4o-mini',
+  stream: true,
+  messages: [...]
+});
+
+for await (const chunk of completion) {
+  process.stdout.write(chunk.choices[0]?.delta?.content || '');
+}
+```
+
+That’s it—no WebSockets necessary.
+
+## 8. Evaluating and iterating
+
+LLM behaviour is *non-deterministic* at higher temperatures, making conventional unit tests hard.  A pragmatic approach is to:
+
+1. Store canonical expected outputs under temperature `0`.
+2. Run evaluation suites offline on each commit.
+3. Track metrics such as **token usage** and **response latency** over time.
+
+For larger projects, consider frameworks like **LangSmith**, **Ragas**, or **Promptfoo** to orchestrate prompt experiments.
+
+## 9. Common pitfalls (and how to avoid them)
+
+* **Hallucinations** – The model fabricates facts.  Mitigation: ask for citations, post-process answers, or verify with retrieval-augmented-generation (RAG).
+* **Cost explosions** – High context windows plus streaming can get expensive.  Mitigation: truncate history, summarise previous messages, cache results.
+* **Sensitive data leakage** – Everything you send is logged by the provider.  Mitigation: scrub PII, request *strict* data-handling guarantees, or host open-source models on-prem.
+* **Rate limits** – Free-tier accounts allow only a handful of requests per minute.  Mitigation: exponential back-off and request batching.
+
+## 10. Where to go next 📚
+
+1. **OpenAI docs** – The [official documentation](https://platform.openai.com/docs) is surprisingly good.
+2. **Awesome-LLM** – A gigantic GitHub list of libraries and papers.
+3. **Courses** – Andrew Ng’s *ChatGPT Prompt Engineering* course (free!) or *FastAI*’s *Practical Deep Learning*.
+4. **Play** – Hack on ideas: a Slack bot, a README summariser, or an automated PR reviewer.  You learn fastest by shipping.
+
+## 11. Conclusion
+
+Generative AI is not magic—it is **probability plus lots of GPUs**—but the results *feel* magical when applied to real problems.  As engineers we have a unique opportunity to translate that magic into user value.  Today you connected a JavaScript file to one of the most sophisticated language models on earth.  Tomorrow you might embed that logic into your company’s next flagship feature.
+
+Stay curious, iterate quickly, and don’t forget to keep an eye on your token budget.  Happy coding, and welcome to the world of generative AI!  🚀
+
+---
+
+*Did you enjoy this article?  Let me know on Twitter [@yourhandle](https://twitter.com/yourhandle) or leave a comment below!*
+
