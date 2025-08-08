@@ -1,0 +1,183 @@
+---
+title: React 16.6で追加されたReact.Suspenseについて
+tags: React suspense
+author: wawoon
+slide: false
+published_at: 2018-10-29
+---
+
+2018/10/23にReact16.6がリリースされています
+
+https://reactjs.org/blog/2018/10/23/react-v-16-6.html
+
+上記ドキュメントで大きく取り上げられているのは
+
+- React.memo
+- React.lazy
+- static contextType
+- getDerivedStateFromError()
+
+などですが、目立たないところで
+
+- Rename unstable_Placeholder to Suspense, and delayMs to maxDuration. (@gaearon in #13799 and @sebmarkbage in #13922)
+
+とあり、Suspenseが正式に追加されていました。
+これはかつて React.Timeoutだったり、React.Placeholderだったりしたものです。
+
+上記ドキュメントではReact.lazyのサンプルにSuspenseの例が書かれているのですが、説明が乏しかったので記事を書くことにします。
+
+# ErrorBoundaryについて
+
+まず前提知識として、React 16にはErrorBoundaryという機能があります。
+
+https://reactjs.org/blog/2017/07/26/error-handling-in-react-16.html
+
+上記の記事のコピペですが例をあげると
+
+```jsx
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  componentDidCatch(error, info) {
+    // Display fallback UI
+    this.setState({ hasError: true });
+    // You can also log the error to an error reporting service
+    logErrorToMyService(error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // You can render any custom fallback UI
+      return <h1>Something went wrong.</h1>;
+    }
+    return this.props.children;
+  }
+}
+```
+
+というように、`componentDidCatch`を定義することで、this.props.childrenの評価時に発生したエラーをキャッチすることができます。
+使い方はErrorBoundaryの内部に別のコンポーネントを埋め込むだけです。
+
+```jsx
+class App extends React.Component {
+  render () {
+    return (
+      <ErrorBoundary>
+        <MyWidget />
+      </ErrorBoundary>
+    )
+  }
+}
+```
+
+この子コンポーネントで`throw`されたものは、エラーでなくとも親コンポーネントの`componentDidCatch`で取得することができます。
+（同じく16.6で追加された`getDerivedStateFromError`でも取得する事ができるようになりました。）
+
+
+# Suspenseとは
+
+Suspenseは、子コンポーネントでエラーではなくてPromiseをthrowすることで、子コンポーネントのレンダリングを中断し、Promiseの完了時にレンダリングを再実行する機能です。これは先程説明した、ErrorBoundaryと全く同じ機構で実現されています。
+
+これがあると、何が嬉しいのでしょうか。
+これまで非同期でHTTPリクエストを投げて、結果を取得するまで`Loading...`のようなテキストを表示し、その後に取得結果をレンダリングするためにはstateを使ってHTTPリクエストの状態を管理する必要がありました。
+
+たとえばこんな感じ
+
+```jsx
+class NewsDetailPage extends React.Component {
+  state = {
+    loading: false,
+    data: null
+  }
+
+  fetchData = async () => {
+    try {
+      this.setState({ loading: true })
+      const res = await fetchNewsData({ id: this.props.id })
+      this.setState({ loading: false, data: res.data.news })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  componentDidMount() {
+    this.fetchData()
+  }
+
+  render() {
+    if (this.state.loading) {
+      return <Loading />
+    } else {
+      return <NewsDetailLayout news={this.state.data} />
+    }
+  }
+}
+```
+
+これを以下のように書き換えることができます。
+
+```jsx
+
+// フェッチしたデータを保存しておく変数。あくまで説明用なので実際はこういう実装してはダメ。
+// 本家では、APIリクエストを叩くメソッドをラップしてキャッシュ層を作る実装を推奨している。
+// そうすると、キャッシュがないときだけAPIを叩いて、あるときは即時レンダリングなどできる。
+// react-cache https://github.com/facebook/react/tree/master/packages/react-cache
+
+let newsData;
+
+// このコンポーネントは２回renderingが走る。
+// 1回目: Promiseがthrowされ、Suspenseのfallbackがrenderされる
+// 2回目: Promiseが解決されると自動的に2回目のrenderが始まる。newsDataにデータがセットされているので、NewsDetailLayoutがreturnされる。
+
+const NewsLayoutSuspense = (props) => {
+  render() {
+    if (!newsData) {
+      throw new Promise((resolve, reject) => {
+        fetchNewsData({ id: props.id })
+          .then(res => {
+            newsData = res.data.news
+            resolve()
+          })
+          .catch(e => reject(e))
+      })
+    }
+
+    // 初回renderには以下はreturnされない。
+    return <NewsDetailLayout news={newsData} />
+  }
+}
+
+const NewsDetailPage = (props) => {
+  return (
+    <Suspense maxDuration={500} fallback={<Loading />}>
+      <NewsLayoutSuspense id={props.id} />
+    </Suspense>
+  )
+}
+```
+
+上記のように、うまく取得したAPIレスポンスをコンポーネントの外側に格納することができると、Functional Componentで従来stateなしで書けなかった処理を書くことができます。Suspenseはあくまでパターンなので、状況によって必要なSuspenseコンポーネントなどを書くとより便利そうです。
+
+上記の例だと、Promiseを解決したあとにローカル変数に代入していましたが実際にやるときは、Promiseの結果を保存するキャッシュ機能を作る必要がありそうです。現時点で有力なのは、
+
+react-cache https://github.com/facebook/react/tree/master/packages/react-cache
+
+ですがAPIはすべてunstableになっているため、代替ライブラリを探すか、react-cacheのAPIに直接依存しないよう工夫が要ります。Suspenseはかなり強力なパターンなので、キャッシュ設計のベストプラクティスが固まれば普及しそうです。
+
+# 参考
+
+[React Suspense を試してみた](https://qiita.com/mizchi/items/89f2ec05f909a8d8dbbe)
+[Reactの次期機能のSuspenseが凄くって、非同期処理がどんどん簡単になってた！](https://qiita.com/fumihiko-hidaka/items/c3aaedd073f7bf5a685f)
+https://github.com/facebook/react/releases
+
+※Suspenseについては、ここ数ヶ月でAPIの命名がかなり変わっているので注意。
+
+名称が変わった例:
+
+- React.Timeout → React.Suspense
+- simple-cache-provider → react-cache
+- AsyncMode → ConcurrentMode
+

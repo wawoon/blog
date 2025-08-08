@@ -1,45 +1,42 @@
 {
   "name": "blog",
   "version": "1.0.0",
-  "main": "index.js",
-  "repository": "https://github.com/wawoon/blog",
+  "private": true,
   "author": "Yoshinori Kosaka <yoshinori.kosaka@welyco.com>",
   "license": "MIT",
-  "dependencies": {
-    "@emotion/core": "^10.0.28",
-    "@emotion/styled": "^10.0.27",
-    "@mdx-js/react": "^1.6.5",
-    "emotion": "^10.0.27",
-    "emotion-server": "^10.0.27",
-    "next": "^9.4.4",
-    "next-mdx-enhanced": "^3.0.0",
-    "next-seo": "^4.5.0",
-    "normalize.css": "^8.0.1",
-    "prism-react-renderer": "^1.1.1",
-    "prismjs": "^1.23.0",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-icons": "^3.10.0",
-    "sitemap": "^6.1.5",
-    "tailwind.macro": "^1.0.0-alpha.10",
-    "tailwindcss": "^1.4.6",
-    "zlib": "^1.0.5"
-  },
-  "devDependencies": {
-    "@emotion/babel-preset-css-prop": "^10.0.27",
-    "@now/node": "^1.7.1",
-    "@types/mdx-js__react": "^1.5.2",
-    "@types/node": "^14.0.11",
-    "@types/react": "^16.9.35",
-    "babel-plugin-emotion": "^10.0.33",
-    "babel-plugin-macros": "^2.8.0",
-    "babel-plugin-preval": "^5.0.0",
-    "front-matter": "^4.0.2",
-    "typescript": "^3.9.5"
+  "repository": "https://github.com/wawoon/blog",
+  "engines": {
+    "node": ">=18.17.0"
   },
   "scripts": {
-    "build": "next build",
+    "dev": "next dev",
+    "build": "contentlayer build && next build",
     "start": "next start",
-    "dev": "next dev"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "contentlayer": "contentlayer build"
+  },
+  "dependencies": {
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "next-contentlayer": "^0.3.4",
+    "contentlayer": "^0.3.4",
+    "remark-gfm": "^3.0.1",
+    "rehype-pretty-code": "^0.13.2",
+    "shiki": "^1.21.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.2.66",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.5",
+    "prettier": "^3.3.3",
+    "tailwindcss": "^3.4.10",
+    "postcss": "^8.4.41",
+    "autoprefixer": "^10.4.20",
+    "@tailwindcss/typography": "^0.5.15"
   }
 }
