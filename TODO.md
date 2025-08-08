@@ -1,7 +1,6 @@
 # TODO List
 
 ## In Progress
-- [ ] Remove legacy Babel config and Emotion remnants to enable SWC (rename babel.config.js, remove macros config)
 - [ ] Finalize SEO metadata (site-wide and per-post), OG image handling
 - [ ] Smoke testing and polish (syntax highlighting theme, minor styles)
 
@@ -38,4 +37,6 @@
 - [x] Add mdx-components.tsx (code, links, images) (2025-08-08)
 - [x] Migrate MDX from pages/posts/*.mdx to content/posts/*.mdx (2025-08-08)
 - [x] App Router pages: layout.tsx, page.tsx, posts/[slug]/page.tsx, tags pages, sitemap.ts, robots.ts (2025-08-08)
+- [x] Remove legacy Babel config and Emotion remnants to enable SWC (2025-08-08)
+- [x] Build success on Next 14 (yarn build) (2025-08-08)
 - [x] Move/prepare assets under public/ as needed (2025-08-08)
