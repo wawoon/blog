@@ -1,7 +1,7 @@
 # TODO List
 
 ## In Progress
-- [ ] Finalize SEO metadata (site-wide and per-post), OG image handling
+- [x] Finalize SEO metadata (site-wide and per-post), OG image handling (2025-08-08 19:09)
 - [ ] Smoke testing and polish (syntax highlighting theme, minor styles)
 
 ## Pending
@@ -11,11 +11,11 @@
 - [ ] Testing & verification
   - [ ] Run dev and smoke test /, /posts/[slug], /tags, /tags/[tag]
   - [ ] Validate sitemap.xml and robots.txt
-  - [ ] Type-check and lint clean
+  - [x] Type-check and lint clean (2025-08-08 19:09)
 - [ ] Documentation & PR
   - [ ] Update README with new stack and content workflow
-  - [ ] Create PULL_REQUEST.md (summary, implementation, testing results, breaking changes)
-  - [ ] Create PR via gh: gh pr create --title "Modernize blog to Next.js 14 (App Router)" --body-file PULL_REQUEST.md
+  - [x] Create PULL_REQUEST.md (summary, implementation, testing results, breaking changes) (2025-08-08 19:09)
+  - [x] Create PR via gh: gh pr create --title "Modernize blog to Next.js 14 (App Router)" --body-file PULL_REQUEST.md (2025-08-08 19:09)
 - [ ] Deployment
   - [ ] Setup/confirm Vercel project, preview deployment
   - [ ] Verify domain and production build on Vercel
