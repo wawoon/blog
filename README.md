@@ -1,94 +1,93 @@
 # wawoon.dev
 
-This is a personal blog built with Next.js, MDX, Tailwind CSS, and Emotion.
+Next.js、MDX、Tailwind CSS、Emotion で構築した個人ブログです。
 
-## Features
-- Write blog posts in Markdown/MDX with front-matter (`title`, `tags`, `published_at`, optional `image`)
-- Responsive styling with Tailwind CSS and Emotion
-- Code syntax highlighting using Prism.js (`prism-react-renderer`)
-- SEO optimization with `next-seo` and dynamic Open Graph tags
-- Automatically generated sitemap and `robots.txt`
-- Google Analytics integration
-- Deploy easily on Vercel (formerly ZEIT Now)
+## 機能
+- フロントマター（`title`、`tags`、`published_at`、任意の `image`）付きの Markdown/MDX で記事を執筆
+- Tailwind CSS と Emotion によるレスポンシブなスタイリング
+- Prism.js（`prism-react-renderer`）によるコードシンタックスハイライト
+- `next-seo` と動的 Open Graph タグによる SEO 最適化
+- サイトマップと `robots.txt` を自動生成
+- Google Analytics 連携
+- Vercel（旧 ZEIT Now）への簡単デプロイ
 
-## Prerequisites
-- Node.js v10 or newer
-- Yarn or npm
+## 必要条件
+- Node.js v10 以上
+- Yarn または npm
 
-## Getting Started
+## はじめ方
 
-1. Clone the repository:
+1. リポジトリをクローン
    ```bash
    git clone https://github.com/wawoon/blog.git
    cd blog
    ```
-2. Install dependencies:
+2. 依存関係をインストール
    ```bash
    yarn install
-   # or
+   # または
    npm install
    ```
-3. Run the development server:
+3. 開発サーバーを起動
    ```bash
    yarn dev
-   # or
+   # または
    npm run dev
    ```
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. ブラウザで [http://localhost:3000](http://localhost:3000) を開く
 
-## Building and Running in Production
+## 本番ビルドと起動
 
 ```bash
 yarn build
 yarn start
-# or with npm:
+# npm の場合:
 npm run build
 npm run start
 ```
 
-## Folder Structure
+## フォルダ構成
 
 ```
 .
-├── components/               Shared React components
-│   └── posts/                Components for blog posts
-├── layouts/                  MDX layouts (default post layout)
-├── lib/                      Utility functions (e.g., date formatting)
-├── post_data/                MDX front-matter parsing and sorting
-├── pages/                    Next.js pages, including `posts/` and API routes
-├── public/                   Static assets (robots.txt, favicon, etc.)
-├── tailwind.config.js        Tailwind CSS configuration
-├── babel-plugin-macros.config.js  Babel configuration for Tailwind macros
-├── next.config.js            Next.js configuration with MDX support
-├── now.json                  Vercel (Now) deployment configuration
-├── package.json              Project metadata and scripts
-└── tsconfig.json             TypeScript configuration
+├── components/               共有 React コンポーネント
+│   └── posts/                ブログ記事向けコンポーネント
+├── layouts/                  MDX レイアウト（デフォルトのポストレイアウト）
+├── lib/                      ユーティリティ関数（例: 日付フォーマット）
+├── post_data/                MDX のフロントマター解析・ソート
+├── pages/                    Next.js ページ（`posts/` や API ルートを含む）
+├── public/                   静的アセット（robots.txt、favicon など）
+├── tailwind.config.js        Tailwind CSS の設定
+├── babel-plugin-macros.config.js  Tailwind マクロ用の Babel 設定
+├── next.config.js            MDX 対応の Next.js 設定
+├── now.json                  Vercel（Now）デプロイ設定
+├── package.json              プロジェクトメタデータとスクリプト
+└── tsconfig.json             TypeScript 設定
 ```
 
-## Writing Posts
+## 記事の書き方
 
-Create a new `.md` or `.mdx` file under `pages/posts/` with YAML front-matter:
+`pages/posts/` 配下に YAML フロントマター付きの `.md` または `.mdx` ファイルを作成します。
 
 ```markdown
 ---
 title: "My New Post"
 tags: "tag1 tag2"
 published_at: "2021-01-01"
-image: "/assets/image.png"  # optional
+image: "/assets/image.png"  # 任意
 ---
 
-Write your post content here in Markdown or MDX...
+ここに Markdown または MDX で本文を書きます...
 ```
 
-## Deployment
+## デプロイ
 
-The `now.json` file is configured for easy deployment on Vercel.
-Simply run:
+`now.json` は Vercel へのデプロイに対応済みです。以下を実行してください:
 
 ```bash
 vercel
 ```
 
-## License
+## ライセンス
 
 MIT © Yoshinori Kosaka
