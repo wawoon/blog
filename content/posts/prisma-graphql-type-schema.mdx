@@ -1,0 +1,145 @@
+---
+title: Prisma.ioでGraphQLスキーマからTypeScriptの型定義を取り出す
+tags: prisma Node.js GraphQL TypeScript
+author: wawoon
+slide: false
+published_at: 2018-05-31
+---
+
+# 追記（2019年1月23日）
+
+以下の記載は、あくまでPrisma.ioを使ったときの設定です。
+単純に、graphqlスキーマからTypeScriptの型定義を利用したい場合は
+
+https://graphql-code-generator.com/
+
+を利用したほうがいいと思います。
+
+# .graphqlconfig.yamlの設定例
+
+```yaml
+projects:
+  app:
+    schemaPath: src/schema.graphql
+    extensions:
+      endpoints:
+        default: 'http://localhost:4000'
+      prepare-bundle: src/generated/app.graphql
+      codegen:
+        - generator: prisma-binding
+          language: typescript
+          output:
+            binding: src/generated/app.ts
+  prisma:
+    schemaPath: src/generated/prisma.graphql
+    extensions:
+      prisma: prisma/prisma.yml
+      codegen:
+        - generator: prisma-binding
+          language: typescript
+          output:
+            binding: src/generated/prisma.ts
+```
+
+# 解説
+
+上から順に見ていきます。
+
+## `prepare-bundle`について
+
+https://github.com/graphql-cli/graphql-cli-prepare
+
+import文を利用している複数の.graphqlファイルを解決して、1つのgraphqlファイルを作成します。
+今回は、`app`で利用している.graphqlファイルからも型を抽出したいので、上記のような設定をしています。
+
+
+## `codegen`について
+
+`graphql codegen`は、.graphqlファイルを使ってflowやtypescriptの型ファイルを生成するコマンドです。
+上記yamlファイル内の`codegen`は、これの`prisma-binding`用の設定をしています。
+
+参考:
+
+- https://github.com/prismagraphql/prisma-binding
+- https://github.com/prismagraphql/prisma-binding/blob/master/src/PrismaTypescriptGenerator.ts
+- https://github.com/graphql-boilerplates/typescript-graphql-server/blob/master/basic/.graphqlconfig.yml
+
+## 全体像
+
+イメージ以下のような感じです。
+
+```
+src/schema.graphql
+
+↓ prepare-bindingでファイルの依存関係を解決
+
+src/generated/app.graphql
+
+↓ graphql codegenで.tsファイルに変換
+
+src/generated/app.ts
+```
+
+
+# 使い方
+
+## リゾルバを書く
+
+以下のような型定義をしてリゾルバで読み込む
+
+```typescript
+
+// src/utils.ts
+import { Query, Mutation } from "../generated/prisma"
+
+export interface Prisma {
+  query: Query;
+  mutation: Mutation;
+}
+
+export interface Context {
+  db: Prisma;
+  request: { user?: { sub: string } };
+}
+
+// src/resolvers/query.ts
+
+import { Context } from "./utils"
+import { UserCreateInput } from "../generated/app"
+
+export const Query = {
+  sampleQuery: async (_, args : UserCreateInput, context : Context, info) => {
+    ...
+  },
+}
+```
+
+これでresolverを書くときにコード補完が効くようになります。
+
+reference:
+[Make TypeScript type definitions from application schema work with Imports from Prisma](https://github.com/prismagraphql/graphql-import/issues/93)
+
+https://github.com/graphql-boilerplates/typescript-graphql-server/blob/master/basic/.graphqlconfig.yml
+
+## デプロイ時に型ファイルの更新をする
+
+デプロイ時に型ファイルの更新をするためには、
+`prisma deploy`時に`graphql get-schema`と`graphql prepare`をする必要がある。
+
+prismaはデプロイコマンドのフックも用意してくれています。
+
+https://www.prisma.io/docs/reference/service-configuration/prisma.yml/yaml-structure-ufeshusai8#hooks-(optional)
+
+以下設定例です。
+
+```yaml
+endpoint: ${env:PRISMA_ENDPOINT}
+datamodel: datamodel.graphql
+secret: ${env:PRISMA_JWT_SECRET}
+hooks:
+  post-deploy:
+    - graphql get-schema --project prisma
+    - graphql prepare
+    - graphql codegen
+```
+

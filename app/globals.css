@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Typography for MDX */
+.prose pre code {
+  @apply bg-transparent p-0; /* pretty-code already styles */
+}

@@ -1,0 +1,162 @@
+---
+title: GetStream.ioでスケーラブルなアクティビティフィードを作る
+tags: getstream フィード SaaS
+author: wawoon
+slide: false
+published_at: 2018-10-21
+---
+
+皆さん、GetStreamというサービスを知っているでしょうか。
+GetStreamというのは、TwitterやInstagramのような、フィードを活用したアプリケーションのためのバックエンドを提供するSaaSサービスです。現在、Ruby, Node, Python, Java, Go, PHP, C#などにクライアントを提供しています。
+
+公式サイト
+https://getstream.io/
+
+# どのような課題を解決するのか
+
+GetStreamは、カスタマイズ可能でスケーラブルなアクティビティフィード機能を提供します。
+そもそもアクティビティフィードを実装したアプリケーションを作成するのは難しいです。仮にものすごく素朴にMySQLでアクティビティフィードを実装しようとした場合、以下のようなクエリがフィード読み込みのたびに発生します。
+
+```
+select user_id, content, created_at
+from posts
+where user_id in (
+　　select target_id
+　　from user_follows
+　　where user_follows.source_id = "hogehoge"
+)
+order by created_at desc
+limit 20;
+```
+
+このような実装の一番の問題点は、ユーザーのリクエストごとにフィードの作成を都度実行していることです。更新がない限り、同じ処理結果を使い続けることができるはずですが、それができないのは非効率です。また、他のユーザーを数千フォローしていると、このクエリ文自体の実行時間が非常に長くなることが予想できます。
+
+そのため、NoSQLデータベースを活用してできるかぎりのフィードを事前作成しておくという戦略を取ることが多いです。ユーザーごとに、過去の投稿の配列を事前にまとめておいてリクエストがあったときに自分がフォローしているユーザーの投稿配列をマージして返す、Read fan-outだったり、書き込み時にそのフィードをフォローしている他のフィードにもデータを追加するWrite fan-outなど、大きく２種類の実装パターンがあります。
+
+どちらにせよ、バックエンドのNoSQLのメンテナンスもしなくてはいけないですし、各種実装を考える必要があります。
+
+```
+考慮しなくてはいけないこと：　
+- ユーザーが投稿をしたとき
+- ユーザーが投稿を更新したとき
+- ユーザーが投稿を削除したとき
+- ユーザーが他のフィードをフォローしたとき
+- ユーザーが他のフィードをアンフォローしたとき
+- フィードの表示順番を時系列ではなくて、他のランキングにしたい
+- フィードの表示方法を何らかのロジックでグルーピングしたい。（〇〇さんが3件のいいねをしました）
+```
+
+話が長くなりましたが、通常フィードサービスを構築するためにスケーラビリティを考慮したインフラを自分たちで構築し、メンテナンスをしなくてはいけません。また、上記で挙げたような機能を自分たちで実装しなくてはいけません。
+
+GetStream.ioを利用すると彼らが構築したスケーラブルなインフラで、自分たちのアプリケーションのフィードを構築することができます。
+
+# GetStreamのアーキテクチャ
+
+GetStreamを使う上で覚えておかなくてはいけないことが３つあります。
+
+- Feed Group
+- Feed
+- Activity
+
+## Feed Group
+
+Feed Groupというのは、たとえば、`timeline`や`user_post`といった大きくそのサービスにどんなフィードの種類があるのかグループ化したものです。各Feed Groupのなかには、ユーザーごとの個別のフィードを格納することができます。Feed Groupには大きく３種類のタイプがあり、通常のタイムラインを表現するFlat Feed, コンテンツをまとめて表示するために使うAggregated Feed, アクティビティの既読管理ができ、かつまとめて表示もできるNotification Feedの３種類があります。
+
+## Feed
+
+Feedは各Feed Groupのなかに存在します。ユーザーごとのフィードは`FeedGroup名:ユーザーID`という形で表現されます。ユーザーIDの部分は任意に決めることが出来ますが、これをユーザーIDにしておくと利用可能な機能があるので、通常はDBにあるユーザーIDにするとよいかと思います。たとえば、user_idが`foobar`のユーザーの`timeline`フィードは、`timeline:foobar`と表現され、`user_post`の場合は`user_post:foobar`となります。
+
+このフィードには後述するアクティビティというオブジェクトを追加・削除・更新することができます。そして重要なことに、フィードは他のフィードをフォロー・アンフォローすることができます。あるフィードが他のフィードをフォローしているとき、フォロー先のフィードに追加されたアクティビティを、フォロワーのフィードは取得することができます。
+
+## Activity
+
+各フィードには、ActivityというJSONオブジェクトを登録することができます。
+このActivityというのは、以下のようなフォーマットを持ったオブジェクトです。
+
+```javascript
+{
+  actor: "user:foo", // 誰が投稿したのか
+  verb: "comment", // どんな行動か
+  object: "comment:123", //  自分たちのDBに保存しているオブジェクトのID
+  target: "post:456", // 何に対して行ったのか（Optional）
+  foreign_id: "comment:123", // "自分たちのDBに保存しているオブジェクトのID。通常objectで指定しているものと同じ",
+  time: new Date("2017-07-01T20:30:45.123") // objectの作成日時（Optional）
+}
+```
+
+このActivityというのがいまいちピンとこないかもしれませんが、各種のIDを格納したイベントだと思ってください。Activityには基本的に、`コレクション名:ID`というフォーマットでIDのみを保存します。GetStreamにはあくまで、IDのみを保存するので、GetStreamから取得したアクティビティの配列をクライアント側に送信する前に、実際のオブジェクトに置き換えします。これを __enrichment__ と呼びます。
+
+
+ポンチ絵を書くならばこんな感じ。
+
+![Artboard 4.png](https://qiita-image-store.s3.amazonaws.com/0/140443/89d758a4-143a-ce53-90c4-109038a336b3.png)
+
+
+# コード例
+
+
+
+```javascript
+
+var chris = client.feed('user_post', 'chris');
+
+chris.addActivity({
+  actor: 'chris',
+  verb: 'add',
+  object: 'picture:10',
+  foreign_id: 'picture:10',
+  message: 'Beautiful bird!'
+}).then(
+  null, // nothing further to do
+  function(err) {
+    // Handle or raise the Error.
+  }
+);
+```
+
+そして、各フィードは他のフィードをフォローすることが出来ます。
+
+```javascript
+var jack = client.feed('timeline', 'jack');
+jack.follow('user', 'chris').then(
+  null, // nothing further to do
+  function(err) {
+    // Handle or raise the Error.
+  }
+);
+
+```
+
+もちろん、フィードからアクティビティを取得することができます。フィードにはフォロー先のフィードに追加されたアクティビティも取得することができます。さっき、`timeline:jack`は`user_post:chris`をフォローしていましたから、chrisの追加したpostを取得することが出来ます。
+
+
+```javascript
+// Read Jack's timeline and Chris' post appears in the feed:
+jack.get({ limit: 10 }).then(function(results) {
+  var activityData = results; // work with the feed activities
+},function(err) {
+    // Handle or raise the Error.
+});
+
+
+chris.removeActivity({ foreignId: 'picture:10' }).then(
+  null, // nothing further to do
+  function(err) {
+    // Handle or raise the Error.
+  }
+);
+```
+
+その他の例についてはドキュメントを御覧ください。
+https://getstream.io/docs/
+
+デフォルトでは時系列順ですが、課金すると各アクティビティをスコアリングてソートするカスタムランキング機能を使えます（便利）。
+https://getstream.io/blog/getting-started-ranked-feeds-getstream-io/
+
+# まとめ
+
+GetStream.ioはスタートアップでフィード系サービスを開始する上で、有力な選択肢の一つになると思います。
+また、GetStreamはかなりよく出来たReactのチュートリアルも提供しているので、こちらもご興味があれば参考にしてください。
+
+https://getstream.io/cabin/
+

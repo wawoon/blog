@@ -1,0 +1,114 @@
+---
+title: GKE + Istioな環境でCloudSQLを使うための設定
+tags: kubernetes GKE istio cloudsql
+author: wawoon
+slide: false
+published_at: 2018-07-05
+---
+
+# 前提
+
+- CloudSQLにアクセスするためには`cloud_sql_proxy`を用いてTCP接続のproxyプロセスを立ち上げる必要がある
+  - https://cloud.google.com/sql/docs/mysql-connect-proxy
+- 一方でIstioを利用しているとき、すべてのネットワークアクセスはIstioによってInterceptされてしまう
+  - これはKubernetes内のクラスタ内のIPだけでなく、外部サーバーを利用するときも同様の挙動をする
+
+>By default, Istio-enabled services are unable to access URLs outside of the cluster because iptables is used in the pod to transparently redirect all outbound traffic to the sidecar proxy, which only handles intra-cluster destinations.
+
+[引用元](https://istio.io/docs/tasks/traffic-management/egress/)
+
+# 何が問題か
+
+- `cloud_sql_proxy`は、指定されたサービスアカウントの認証キーを使って`accounts.google.com`などにアクセスして認証をした上で、CloudSQLのサーバーとコネクションを確立する。
+- Istioが`cloud_sql_proxy`の外部アクセスをinterceptするのが問題
+  - cloud_sql_proxyが`accounts.google.com`などにアクセスできないので、そもそも認証・認可されない
+  - 認証・認可されても、CloudSQLのサーバー自体も外部IPなのでこれにもアクセスできない。
+
+
+# 解決策
+
+https://istio.io/docs/tasks/traffic-management/egress/#calling-external-services-directly
+
+によると以下の2方針で解決できる。
+
+1. Istioで外部サービスへの直接的なアクセスを実現するためには`ServiceEntry`を作成することが必要。
+2. Istioでインストール時にinterceptするIPアドレスをcidrで指定し、外部IPへのアクセスをinterceptしないようにする
+
+今回は前者の方針をとった。
+
+# 実装
+
+以下のように設定すると無事にKubernetes + Istioの環境でCloudSQLを使える。
+
+## cloud_sql_proxyのPodの作成
+
+https://github.com/GoogleCloudPlatform/cloudsql-proxy/blob/master/Kubernetes.md
+
+を参照し、PodとServiceを作成する。
+
+## ServiceEntityの作成
+
+以下、ServiceEntityを`accounts.google.com`、`www.googleapis.com`、CloudSQLのサーバーのそれぞれに作成する。
+
+ServiceEntityについては以下を参照。
+
+- https://istio.io/docs/tasks/traffic-management/egress/
+- https://istio.io/docs/reference/config/istio.networking.v1alpha3/#ServiceEntry
+
+実際のコードは以下から利用しています。
+https://github.com/istio/istio/issues/6593
+
+### GCPのAPIサーバーの設定
+
+```
+cat <<EOF | istioctl create -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: account-google-serviceentry-rule
+spec:
+  hosts:
+  - accounts.google.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+EOF
+
+cat <<EOF | istioctl create -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: googleapis-serviceentry-rule
+spec:
+  hosts:
+  - www.googleapis.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+EOF
+```
+
+### 外部MySQLのIPの設定
+
+```
+cat <<EOF | istioctl create -f -
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: mysql-serviceentry-rule
+spec:
+  hosts:
+  - MySQLサーバーのIPを書く
+  ports:
+  - number: 3307
+    name: tcp
+    protocol: TCP
+EOF
+```
+
+## Kubernetes内でMySQLサーバーにアクセスする
+
+Kubernetes内から`cloud_sql_proxy`のPodへアクセスすればMySQLサーバーにアクセスできる
+
