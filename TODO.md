@@ -40,3 +40,5 @@
 - [x] Remove legacy Babel config and Emotion remnants to enable SWC (2025-08-08)
 - [x] Build success on Next 14 (yarn build) (2025-08-08)
 - [x] Move/prepare assets under public/ as needed (2025-08-08)
+
+PR: https://github.com/wawoon/blog/pull/29
