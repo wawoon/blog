@@ -41,7 +41,7 @@ export default makeSource({
   documentTypes: [Post],
   mdx: {
     remarkPlugins: [remarkGfm],
-    rehypePlugins: [[rehypePrettyCode, { theme: 'github-dark' }]],
+    rehypePlugins: [[rehypePrettyCode as any, { theme: 'github-dark' }]],
   },
   disableImportAliasWarning: true,
 })

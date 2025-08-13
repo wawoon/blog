@@ -6,6 +6,12 @@ node_modules
 .mdx-data
 draft
 
+# Contentlayer output
+.contentlayer
+
+# TS incremental build info
+*.tsbuildinfo
+
 .vercel
 .env
 .env.*

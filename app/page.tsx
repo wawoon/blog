@@ -18,7 +18,7 @@ export default function HomePage() {
             </div>
             {post.tagList.length > 0 && (
               <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-600">
-                {post.tagList.map((t) => (
+                {post.tagList.map((t: string) => (
                   <Link key={t} href={`/tags/${encodeURIComponent(t)}`} className="rounded bg-slate-100 px-2 py-0.5 hover:bg-slate-200">
                     {t}
                   </Link>
