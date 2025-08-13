@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { useMDXComponent } from 'next-contentlayer/hooks'
 import { mdxComponents } from '../../../mdx-components'
 import type { Metadata } from 'next'
+import { dateToString } from '../../../lib/date'
 
 export const dynamicParams = false
 
@@ -27,7 +28,7 @@ export default function PostPage({ params }: { params: { slug: string } }) {
     <article className="prose prose-slate max-w-none">
       <h1>{post.title}</h1>
       <div className="text-sm text-slate-500">
-        {new Date(post.published_at).toLocaleDateString('ja-JP')}
+        {dateToString(new Date(post.published_at))}
       </div>
       <MDXContent components={mdxComponents} />
     </article>

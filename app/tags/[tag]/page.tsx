@@ -1,6 +1,7 @@
 import { allPosts } from 'contentlayer/generated'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { dateToString } from '../../../lib/date'
 
 export const dynamicParams = false
 
@@ -26,7 +27,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
               {post.title}
             </Link>
             <div className="text-sm text-slate-500">
-              {new Date(post.published_at).toLocaleDateString('ja-JP')}
+              {dateToString(new Date(post.published_at))}
             </div>
           </li>
         ))}
