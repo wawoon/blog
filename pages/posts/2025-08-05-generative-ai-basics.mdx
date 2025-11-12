@@ -1,0 +1,115 @@
+---
+title: 2025年版・生成AIと始める個人開発入門
+tags: GenerativeAI LLM Next.js React
+author: wawoon
+slide: false
+published_at: 2025-08-05
+---
+export const config = { amp: true }
+
+## はじめに
+
+2022年のChatGPT公開以降、生成AI（Generative AI）は急速に普及し、2025年の現在では**個人開発**においても欠かせないツールセットとなりました。本記事では、Next.js を用いたフロントエンドと OpenAI API を組み合わせて、最小構成で生成AIアプリを立ち上げる手順を解説します。
+
+## 前提知識・環境
+
+- Node.js 20 以上
+- Next.js 14 (App Router)
+- TypeScript
+- OpenAI Platform の API キー
+
+## 1. プロジェクト作成
+
+```bash
+npx create-next-app@latest my-ai-app --ts --app
+cd my-ai-app
+```
+
+## 2. OpenAI SDK の導入
+
+```bash
+yarn add openai
+```
+
+```ts
+// lib/openai.ts
+import OpenAI from "openai";
+
+export const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+```
+
+## 3. サーバーアクションでチャット API を叩く
+
+Next.js 14 では **Server Actions** でネイティブにサーバーサイドロジックを記述できます。
+
+```ts
+// app/actions/chat.ts
+"use server";
+
+import { openai } from "@/lib/openai";
+
+export async function chat(userMessage: string) {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [{ role: "user", content: userMessage }],
+  });
+  return response.choices[0].message.content;
+}
+```
+
+## 4. UI 実装
+
+```tsx
+// app/page.tsx
+"use client";
+import { useState } from "react";
+import { chat } from "./actions/chat";
+
+export default function Home() {
+  const [message, setMessage] = useState("");
+  const [response, setResponse] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const res = await chat(message);
+    setResponse(res);
+  }
+
+  return (
+    <main className="p-8 max-w-xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">My AI App</h1>
+      <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
+        <input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="flex-1 border p-2 rounded"
+          placeholder="Ask anything..."
+        />
+        <button className="bg-blue-600 text-white px-4 py-2 rounded">
+          Send
+        </button>
+      </form>
+      {response && (
+        <div className="whitespace-pre-wrap border p-4 rounded bg-gray-50">
+          {response}
+        </div>
+      )}
+    </main>
+  );
+}
+```
+
+## 5. デプロイ
+
+Vercel へデプロイする場合、`OPENAI_API_KEY` を [Environment Variables] に設定するだけで動作します。
+
+## まとめ
+
+生成AIと Next.js の組み合わせは、少ないコードで強力なプロダクトを作れるのが魅力です。今回紹介した最小構成をベースに、ストレージや認証、ストリーミング対応などを拡張してみてください。
+
+---
+
+*Originally published on August 5, 2025*
+
