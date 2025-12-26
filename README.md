@@ -1,94 +1,106 @@
-# wawoon.dev
+# wawoon.dev ブログ
 
-This is a personal blog built with Next.js, MDX, Tailwind CSS, and Emotion.
+Next.js と MDX で構築した個人技術ブログです。Tailwind CSS と Emotion を組み合わせたモダンなフロントエンド環境で、記事は **完全静的生成 (SSG)** され Vercel へデプロイされます。
 
-## Features
-- Write blog posts in Markdown/MDX with front-matter (`title`, `tags`, `published_at`, optional `image`)
-- Responsive styling with Tailwind CSS and Emotion
-- Code syntax highlighting using Prism.js (`prism-react-renderer`)
-- SEO optimization with `next-seo` and dynamic Open Graph tags
-- Automatically generated sitemap and `robots.txt`
-- Google Analytics integration
-- Deploy easily on Vercel (formerly ZEIT Now)
+---
 
-## Prerequisites
-- Node.js v10 or newer
-- Yarn or npm
+## 主な特徴
 
-## Getting Started
+- **Markdown / MDX** で直感的に記事を記述
+- **Tailwind CSS + Emotion** による柔軟かつ高速なスタイリング
+- **Prism.js (prism-react-renderer)** によるコードハイライト
+- **next-seo** を利用した SEO / OGP タグ自動生成
+- Google Analytics 連携 & 自動サイトマップ生成
+- Vercel ワンクリックデプロイ (now.json 同梱)
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/wawoon/blog.git
-   cd blog
-   ```
-2. Install dependencies:
-   ```bash
-   yarn install
-   # or
-   npm install
-   ```
-3. Run the development server:
-   ```bash
-   yarn dev
-   # or
-   npm run dev
-   ```
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+## 使用技術
 
-## Building and Running in Production
+- Next.js 9 (TypeScript)
+- MDX / next-mdx-enhanced
+- Tailwind CSS (twin.macro) + Emotion
+- Prism.js (prism-react-renderer)
+- next-seo, sitemap-generator
+- Vercel (旧 ZEIT Now)
+
+## 動作環境
+
+- Node.js **v12 以上** を推奨
+- Yarn または npm
+
+## クイックスタート
 
 ```bash
-yarn build
-yarn start
-# or with npm:
-npm run build
-npm run start
+# リポジトリを取得
+$ git clone https://github.com/wawoon/blog.git
+$ cd blog
+
+# 依存関係をインストール
+$ yarn install        # または npm install
+
+# 開発サーバーを起動
+$ yarn dev            # または npm run dev
+
+# ブラウザで確認
+# → http://localhost:3000 を開く
 ```
 
-## Folder Structure
+### 本番ビルド
 
+```bash
+$ yarn build  # 静的ファイルを生成
+$ yarn start  # 本番サーバーを起動
 ```
+
+## ディレクトリ構成
+
+```text
 .
-├── components/               Shared React components
-│   └── posts/                Components for blog posts
-├── layouts/                  MDX layouts (default post layout)
-├── lib/                      Utility functions (e.g., date formatting)
-├── post_data/                MDX front-matter parsing and sorting
-├── pages/                    Next.js pages, including `posts/` and API routes
-├── public/                   Static assets (robots.txt, favicon, etc.)
-├── tailwind.config.js        Tailwind CSS configuration
-├── babel-plugin-macros.config.js  Babel configuration for Tailwind macros
-├── next.config.js            Next.js configuration with MDX support
-├── now.json                  Vercel (Now) deployment configuration
-├── package.json              Project metadata and scripts
-└── tsconfig.json             TypeScript configuration
+├── components/               共通 React コンポーネント
+│   └── posts/                記事専用コンポーネント
+├── hooks/                    カスタムフック
+├── layouts/                  MDX レイアウト
+├── lib/                      ユーティリティ関数
+├── pages/                    Next.js ページ & API ルート
+│   ├── posts/                記事 (.mdx) 本体
+│   └── tags/                 タグ別一覧ページ
+├── post_data/                フロントマターを解析し記事一覧を生成
+├── public/                   静的アセット
+├── tailwind.config.js        Tailwind 設定
+├── next.config.js            Next.js 設定（MDX 連携など）
+├── now.json                  Vercel デプロイ設定
+└── package.json              スクリプト & 依存関係
 ```
 
-## Writing Posts
+## 記事の書き方
 
-Create a new `.md` or `.mdx` file under `pages/posts/` with YAML front-matter:
+1. `pages/posts/` 配下に **`.mdx`** ファイルを作成します。
+2. ファイル冒頭に以下のフロントマターを記述してください。
 
 ```markdown
 ---
-title: "My New Post"
-tags: "tag1 tag2"
-published_at: "2021-01-01"
-image: "/assets/image.png"  # optional
+title: "記事タイトル"
+tags: "react nextjs"
+published_at: "2023-01-01"
+image: "/ogp/my-post.png"   # 任意
 ---
 
-Write your post content here in Markdown or MDX...
+ここに本文を書きます。MDX のため React コンポーネントも挿入可能です 🎉
 ```
 
-## Deployment
+3. 開発サーバーを再読み込みすると新しい記事が自動で反映されます。
 
-The `now.json` file is configured for easy deployment on Vercel.
-Simply run:
+## デプロイ
+
+Vercel CLI を使えば簡単にデプロイできます。
 
 ```bash
-vercel
+# ビルド → デプロイ
+$ vercel
 ```
 
-## License
+`now.json` によりビルドコマンドや環境変数が自動設定されます。
 
-MIT © Yoshinori Kosaka
+## ライセンス
+
+MIT License © 2023 Yoshinori Kosaka
+
