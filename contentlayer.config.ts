@@ -2,6 +2,19 @@ import { defineDocumentType, makeSource } from 'contentlayer/source-files'
 import rehypePrettyCode from 'rehype-pretty-code'
 import remarkGfm from 'remark-gfm'
 
+const toExcerpt = (markdown: string, length = 120) => {
+  const text = markdown
+    .replace(/```[\s\S]*?```/g, ' ') // code blocks
+    .replace(/<[^>]+>/g, ' ') // html / jsx tags
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ') // images
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // links -> text
+    .replace(/^\s*(#{1,6}|>|[-*+]|\d+\.)\s+/gm, '') // headings, quotes, list markers
+    .replace(/[`*~|]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return text.length > length ? `${text.slice(0, length)}…` : text
+}
+
 export const Post = defineDocumentType(() => ({
   name: 'Post',
   filePathPattern: `posts/*.mdx`,
@@ -33,6 +46,11 @@ export const Post = defineDocumentType(() => ({
       of: { type: 'string' },
       resolve: (doc) => (doc.tags ? doc.tags.split(/\s+/).filter(Boolean) : []),
     },
+    excerpt: {
+      type: 'string',
+      description: 'Plain-text summary used as a fallback for meta description',
+      resolve: (doc) => toExcerpt(doc.body.raw),
+    },
   },
 }))
 
@@ -41,6 +59,8 @@ export default makeSource({
   documentTypes: [Post],
   mdx: {
     remarkPlugins: [remarkGfm],
-    rehypePlugins: [[rehypePrettyCode, { theme: 'github-dark' }]],
+    // rehype-pretty-code bundles a newer vfile than contentlayer's unified types, hence the cast
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rehypePlugins: [[rehypePrettyCode as any, { theme: 'github-dark' }]],
   },
 })

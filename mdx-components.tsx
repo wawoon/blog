@@ -1,12 +1,16 @@
 import type { MDXComponents } from 'mdx/types'
+import type { Route } from 'next'
 import Link from 'next/link'
 
 export const mdxComponents: MDXComponents = {
-  a: (props) => {
-    const href = String(props.href || '')
-    const isInternal = href.startsWith('/') || href.startsWith('#')
-    if (isInternal) return <Link href={href}>{props.children}</Link>
-    return <a target="_blank" rel="noreferrer" {...props} />
+  a: ({ href = '', children, ...props }) => {
+    if (href.startsWith('/')) return <Link href={href as Route}>{children}</Link>
+    if (href.startsWith('#')) return <a href={href} {...props}>{children}</a>
+    return (
+      <a href={href} target="_blank" rel="noreferrer" {...props}>
+        {children}
+      </a>
+    )
   },
-  pre: (props) => <pre className="not-prose overflow-x-auto" {...props} />,
+  pre: (props) => <pre className="overflow-x-auto" {...props} />,
 }

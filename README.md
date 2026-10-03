@@ -1,93 +1,81 @@
 # wawoon.dev
 
-This is a personal blog built with Next.js, MDX, Tailwind CSS, and Emotion.
+Personal blog built with **Next.js 14 (App Router)**, **MDX via Contentlayer**, and **Tailwind CSS**.
 
 ## Features
-- Write blog posts in Markdown/MDX with front-matter (`title`, `tags`, `published_at`, optional `image`)
-- Responsive styling with Tailwind CSS and Emotion
-- Code syntax highlighting using Prism.js (`prism-react-renderer`)
-- SEO optimization with `next-seo` and dynamic Open Graph tags
-- Automatically generated sitemap and `robots.txt`
-- Google Analytics integration
-- Deploy easily on Vercel (formerly ZEIT Now)
+- Posts written in MDX (`content/posts/*.mdx`) with typed front-matter (Contentlayer)
+- Statically generated pages: home, `/posts/[slug]`, `/tags`, `/tags/[tag]`
+- Syntax highlighting with Shiki (`rehype-pretty-code`), GitHub-flavored Markdown (`remark-gfm`)
+- Tailwind CSS v3 + `@tailwindcss/typography`, automatic dark mode (`prefers-color-scheme`)
+- SEO via the Metadata API: canonical URLs, Open Graph / Twitter cards, auto-generated descriptions
+- `sitemap.xml`, `robots.txt` and an RSS feed (`/feed.xml`)
 
 ## Prerequisites
-- Node.js v10 or newer
-- Yarn or npm
+- Node.js 18.17 or newer
+- Yarn
 
 ## Getting Started
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/wawoon/blog.git
-   cd blog
-   ```
-2. Install dependencies:
-   ```bash
-   yarn install
-   # or
-   npm install
-   ```
-3. Run the development server:
-   ```bash
-   yarn dev
-   # or
-   npm run dev
-   ```
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Building and Running in Production
-
 ```bash
-yarn build
-yarn start
-# or with npm:
-npm run build
-npm run start
+git clone https://github.com/wawoon/blog.git
+cd blog
+yarn install
+yarn dev        # http://localhost:3000
 ```
+
+## Scripts
+
+| Command          | Description                                 |
+| ---------------- | ------------------------------------------- |
+| `yarn dev`       | Start the dev server (with content reload)  |
+| `yarn build`     | Build content with Contentlayer + Next.js   |
+| `yarn start`     | Serve the production build                  |
+| `yarn lint`      | ESLint (`next lint`)                        |
+| `yarn typecheck` | TypeScript type check                       |
+| `yarn format`    | Format with Prettier                        |
 
 ## Folder Structure
 
 ```
 .
-├── components/               Shared React components
-│   └── posts/                Components for blog posts
-├── layouts/                  MDX layouts (default post layout)
-├── lib/                      Utility functions (e.g., date formatting)
-├── post_data/                MDX front-matter parsing and sorting
-├── pages/                    Next.js pages, including `posts/` and API routes
-├── public/                   Static assets (robots.txt, favicon, etc.)
-├── tailwind.config.js        Tailwind CSS configuration
-├── babel-plugin-macros.config.js  Babel configuration for Tailwind macros
-├── next.config.js            Next.js configuration with MDX support
-├── now.json                  Vercel (Now) deployment configuration
-├── package.json              Project metadata and scripts
-└── tsconfig.json             TypeScript configuration
+├── app/                    App Router pages, sitemap.ts, robots.ts, feed.xml route
+├── components/             Shared React components (PostList, TagList)
+├── content/posts/          Blog posts (MDX)
+├── lib/                    Site config and helpers (posts, dates)
+├── public/                 Static assets
+├── contentlayer.config.ts  Content schema and MDX plugins
+├── mdx-components.tsx      Components used when rendering MDX
+├── next.config.mjs         Next.js configuration (Contentlayer, redirects)
+└── tailwind.config.js      Tailwind CSS configuration
 ```
+
+`.contentlayer/` is generated on `yarn dev` / `yarn build` and is not committed.
 
 ## Writing Posts
 
-Create a new `.md` or `.mdx` file under `pages/posts/` with YAML front-matter:
+Create `content/posts/<slug>.mdx`. The file name becomes the URL (`/posts/<slug>`).
 
 ```markdown
 ---
-title: "My New Post"
-tags: "tag1 tag2"
-published_at: "2021-01-01"
-image: "/assets/image.png"  # optional
+title: My New Post
+tags: tag1 tag2            # space-separated
+published_at: 2024-01-01
+description: Optional summary (falls back to the beginning of the post)
+image: /og/my-post.png     # optional OG image
 ---
 
-Write your post content here in Markdown or MDX...
+Write your post here in Markdown or MDX...
 ```
+
+## Configuration
+
+| Env var                | Default              | Description                                   |
+| ---------------------- | -------------------- | --------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL` | `https://wawoon.dev` | Absolute site URL used for canonical/OG/feeds |
 
 ## Deployment
 
-The `now.json` file is configured for easy deployment on Vercel.
-Simply run:
-
-```bash
-vercel
-```
+Deploy on [Vercel](https://vercel.com/) (framework preset: Next.js). The default build command `yarn build` runs Contentlayer before `next build`.
 
 ## License
 
