@@ -2,28 +2,34 @@
 
 ## In Progress
 - [x] Finalize SEO metadata (site-wide and per-post), OG image handling (2025-08-08 19:09)
-- [ ] Smoke testing and polish (syntax highlighting theme, minor styles)
+- [x] Smoke testing and polish (syntax highlighting theme, minor styles) (2026-10-03)
 
 ## Pending
-- [ ] Write utilities (if needed)
-  - [ ] lib/date.ts (nice date formatting)
-  - [ ] lib/tags.ts (normalize/group)
-- [ ] Testing & verification
-  - [ ] Run dev and smoke test /, /posts/[slug], /tags, /tags/[tag]
-  - [ ] Validate sitemap.xml and robots.txt
+- [x] Write utilities (if needed) (2026-10-03)
+  - [x] lib/date.ts (nice date formatting) (2026-10-03)
+  - [x] lib/posts.ts (sorting, tags, descriptions) (2026-10-03)
+- [x] Testing & verification (2026-10-03)
+  - [x] Run dev and smoke test /, /posts/[slug], /tags, /tags/[tag] (2026-10-03)
+  - [x] Validate sitemap.xml and robots.txt (2026-10-03)
   - [x] Type-check and lint clean (2025-08-08 19:09)
-- [ ] Documentation & PR
-  - [ ] Update README with new stack and content workflow
+- [x] Documentation & PR
+  - [x] Update README with new stack and content workflow (2026-10-03)
   - [x] Create PULL_REQUEST.md (summary, implementation, testing results, breaking changes) (2025-08-08 19:09)
   - [x] Create PR via gh: gh pr create --title "Modernize blog to Next.js 14 (App Router)" --body-file PULL_REQUEST.md (2025-08-08 19:09)
 - [ ] Deployment
   - [ ] Setup/confirm Vercel project, preview deployment
   - [ ] Verify domain and production build on Vercel
-- [ ] Cleanup
-  - [ ] Remove legacy files/configs no longer used (pages/*, now.json, next.config.old.js if fully migrated)
-  - [ ] Add redirects if any URL changes are required (aiming to preserve existing paths)
+- [x] Cleanup (2026-10-03)
+  - [x] Remove legacy files/configs no longer used (pages/*, now.json, next.config.old.js if fully migrated) (2026-10-03)
+  - [x] Add redirects if any URL changes are required (aiming to preserve existing paths) (2026-10-03)
+
+## Follow-ups
+- [ ] Consider migrating off Contentlayer (unmaintained) to e.g. Velite / next-mdx-remote, then upgrade to Next.js 15 / React 19
+- [ ] Generate per-post OG images (next/og)
 
 ## Completed
+- [x] Add RSS feed (/feed.xml), canonical/OG metadata, dark mode, prev/next post navigation (2026-10-03)
+- [x] Fix non-ASCII tag pages returning 404 (2026-10-03)
 - [x] Create feature branch: feat/modernize-next14 (2025-08-08)
 - [x] Inventory existing features/components and content locations (2025-08-08)
 - [x] Set Node engine and scripts in package.json (dev/build/start/lint/typecheck/format/contentlayer) (2025-08-08)

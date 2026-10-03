@@ -1,36 +1,39 @@
-import { allPosts } from 'contentlayer/generated'
-import Link from 'next/link'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { PostList } from '@/components/PostList'
+import { getAllTags, getPostsByTag, tagPath } from '@/lib/posts'
+import { feedAlternates } from '@/lib/site'
 
 export const dynamicParams = false
 
+type Props = { params: { tag: string } }
+
+// Next 14 matches `dynamicParams = false` against the *encoded* path segment,
+// so non-ASCII tags (e.g. 転職活動) must be returned URL-encoded here.
 export function generateStaticParams() {
-  const set = new Set<string>()
-  for (const p of allPosts) {
-    for (const t of p.tagList) set.add(t)
-  }
-  return Array.from(set).map((tag) => ({ tag }))
+  return getAllTags().map(({ tag }) => ({ tag: encodeURIComponent(tag) }))
 }
 
-export default function TagPage({ params }: { params: { tag: string } }) {
+export function generateMetadata({ params }: Props): Metadata {
   const tag = decodeURIComponent(params.tag)
-  const matched = allPosts.filter((p) => p.tagList.includes(tag))
-  if (matched.length === 0) notFound()
+  return {
+    title: `#${tag}`,
+    description: `「${tag}」タグの記事一覧`,
+    alternates: { canonical: tagPath(tag), types: feedAlternates },
+  }
+}
+
+export default function TagPage({ params }: Props) {
+  const tag = decodeURIComponent(params.tag)
+  const posts = getPostsByTag(tag)
+  if (posts.length === 0) notFound()
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Tag: {tag}</h1>
-      <ul className="space-y-4">
-        {matched.map((post) => (
-          <li key={post._id}>
-            <Link href={`/posts/${post.slug}`} className="font-semibold hover:underline">
-              {post.title}
-            </Link>
-            <div className="text-sm text-slate-500">
-              {new Date(post.published_at).toLocaleDateString('ja-JP')}
-            </div>
-          </li>
-        ))}
-      </ul>
+    <div className="space-y-8">
+      <h1 className="text-2xl font-bold">
+        #{tag}{' '}
+        <span className="text-base font-normal text-slate-500 dark:text-slate-400">({posts.length})</span>
+      </h1>
+      <PostList posts={posts} />
     </div>
   )
 }
