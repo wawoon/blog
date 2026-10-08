@@ -17,3 +17,8 @@ draft
 .vercel
 .env
 .env.*
+
+# >>> gx-env >>>
+# Plaintext written by gx-env inject. Never commit these.
+.env.local
+# <<< gx-env <<<

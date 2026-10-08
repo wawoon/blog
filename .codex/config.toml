@@ -1,0 +1,3 @@
+[mcp_servers.gx-env]
+command = "gxhub"
+args = ["gx-env", "mcp"]

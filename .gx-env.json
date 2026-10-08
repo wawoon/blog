@@ -1,0 +1,11 @@
+{
+  "defaultProfile": "local",
+  "profiles": {
+    "docker": {},
+    "local": {
+      "output": ".env.local"
+    },
+    "test": {}
+  },
+  "project": "blog"
+}

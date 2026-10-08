@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "gx-env": {
+      "args": [
+        "gx-env",
+        "mcp"
+      ],
+      "command": "gxhub"
+    }
+  }
+}
